@@ -17,7 +17,9 @@ To use awecron:
 
 ## Dependencies
 
-* opendoas (temporary no sudo)
+* sudo / opendoas
+* bash
+* GNU date
 
 
 ## Files

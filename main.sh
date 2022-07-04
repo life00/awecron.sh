@@ -1,7 +1,8 @@
 #!/bin/bash
 
-REPO=/home/user/awecron
+REPO=/home/user/dev/src/awecron
 USER=user
+SUDO=doas
 
 # lists all dirs in the repo into an array except dotdirs
 # this could be useful when modifying something and preventing unexpected execution 
@@ -28,9 +29,9 @@ function main() {
 		if (( $nextrun <= $currenttime )); then
 			if [[ $rootperms -eq true ]]; then
 				# it is expected for script to be run as root
-				doas .$i\script
+				$SUDO .$i\script
 			else 
-				doas -u $USER .$i\script
+				$SUDO -u $USER .$i\script
 			fi
 			
 			echo $(( $currenttime + $everytime )) > $i\nextrun
