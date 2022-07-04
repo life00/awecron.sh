@@ -1,11 +1,11 @@
-#### Note: Awecron requires **root privileges** and written by **random guy on the internet**. Understand the risks before using it.
+### Note: Awecron requires root privileges and written by random guy on the internet. Understand the risks before using it.
 
 # Awesome Cron
 ## Introduction
 Awecron is a small and simple custom cron that has something similar between anacron and crontab.
-The main use case for it is for desktop usage however nothing limits using it on a server.
+The main use case for it is for desktop users however nothing limits using it on a server.
 
-###The advantages of using it:
+### The advantages of using it:
  * extremely minimal and easy to read
  * would still run if misses cronjob run time (_if comparing with crontab_)
  * no complicated time logic (_if comparing with anacron and using on desktop_)
