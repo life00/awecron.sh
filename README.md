@@ -1,44 +1,46 @@
-
-## [WARNING] Potential Security Risk
-The awecron is supposed to be run as root so you should make sure that the write permissions are set right.
-It is recommended to copy the repo contents for installation to not run `git pull` with root privileges.
-Also **please** look through the code before you run anything (very simple to read).
+#### Note: Awecron requires **root privileges** and written by **random guy on the internet**. Understand the risks before using it.
 
 # Awesome Cron
-This is a small and simple custom cron that has something similar between anacron and crontab.
+## Introduction
+Awecron is a small and simple custom cron that has something similar between anacron and crontab.
+The main use case for it is for desktop usage however nothing limits using it on a server.
 
-To use awecron: 
+###The advantages of using it:
+ * extremely minimal and easy to read
+ * would still run if misses cronjob run time (_if comparing with crontab_)
+ * no complicated time logic (_if comparing with anacron and using on desktop_)
 
- * change the environment variables in `main.sh`
- * duplicate the template directory in the repo
- * configure as you wish
- * complete all the security recommendations above
- * run main.sh as root like a daemon
+## Installation
 
-## Dependencies
+### Dependencies
 
 * sudo / opendoas
 * bash
 * GNU date
 
 
-## Files
+### How to use? 
 
- * `everytime` contains a string of numbers that represent seconds you want the awecron to execute the script.
- * `nextrun` is an essential file that is automatically changed after execution to when the next time the script will run
- * `rootperms` contains a condition true or false if you want to give the script root perms
- * `script` is a binary or a bash script that you want to execute
+ * clone the repo
+ * change the environment variables in `main.sh`
+ * duplicate the template directory in the repo
+ * configure the cronjob config as you wish
+ * run main.sh as root like a daemon
 
-**ALL OF THE FILES SHOULD BE IN THOSE NAMES ONLY**
+### Files
 
+ * `bin` is a binary or a shell script that supposed to run
+ * `timer` is an essential file that is automatically changed after last run to when the next time the `bin` will run
+ * `config` contains configuration variables for the cronjob
+    * `name` optional name for logs
+    * `user` what user runs the `bin`
+    * `intr` interval in seconds
 
 ## How it works?
 
-The `nextrun` file contains the next time it would be executed. If the current time is more than that time it was set to execute the script then it will run and add the `everytime` to the current time and put it again into `nextrun` file.
-Basically this cron is for desktop usage when you dont want to miss the execution of a script and you dont want to mess around with anacron time logic.
+When awecron runs it checks and runs through every directory in the repo (_except dotdirs_). It checks if the current time is more than the next run time in `timer` of the selected cronjob, if yes then it will run the `bin` and set the next run time.
 
-## Work In Progress
+Note: Ignore dotdirs feature is useful when modifying the cronjob to prevent unexpected awecron errors.
 
-Currently, awecron is in development, so use it at your own risk.
-The documentation, functionality, and support, are work in progress so please be patient.
-Contribution and suggestions are welcome.
+
+

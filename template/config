@@ -1,0 +1,12 @@
+#!/bin/bash
+
+# optional name for logging
+name=hello_world!
+
+# what user runs the bin
+user=user
+
+# interval in seconds
+# Note: 60 seconds is the minimum
+# you can modify the code to allow lower
+intr=60
