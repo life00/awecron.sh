@@ -37,6 +37,6 @@ Basically this cron is for desktop usage when you dont want to miss the executio
 
 ## Work In Progress
 
-Currently awecron is in development but already works so use it on your own risk.
-The documentation, functionaly and support is WIP so please be patience.
-I am also happy for any contribution and suggestions.
+Currently, awecron is in development, so use it at your own risk.
+The documentation, functionality, and support, are work in progress so please be patient.
+Contribution and suggestions are welcome.
