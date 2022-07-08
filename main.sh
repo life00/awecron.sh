@@ -10,7 +10,7 @@ function rundir() {
         while read -r -d $'\0' line; do
                 # puts into the array
                 arr+=("$line")
-        done < <(find $REPO/*/ -maxdepth 0 -regextype posix-egrep -regex '.*' -print0) # inputs the string
+        done < <(find $REPO/* -maxdepth 0 -type d -regextype posix-egrep -regex '.*' -print0) # inputs the string
 }
 
 function cronlog() {
@@ -25,18 +25,18 @@ function main() {
 	# runs through everything in the array
         for i in ${arr[@]}; do
                 # gets the cronjob configuration variables
-                source $i\config
+                source $i/config
 
-                timer=$(cat $i\timer)
+                timer=$(cat $i/timer)
 
                 time=$(date +%s%N | cut -b1-10)
 
                 if (( $timer <= $time )); then
                         cronlog
                         # it is expected for script to run as root
-                        $SUDO -u $user .$i\bin
+                        $SUDO -u $user $i/bin
                         # setting the next run time
-                        echo $(( $time + $intr )) > $i\timer
+                        echo $(( $time + $intr )) > $i/timer
                 fi
         done
 
@@ -44,9 +44,6 @@ function main() {
         arr=()
 }
 
-
-# just to make sure the path is right
-cd /
 
 while true; do
         main
