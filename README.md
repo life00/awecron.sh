@@ -22,9 +22,10 @@ The main use case for it is for desktop users however nothing limits using it on
 ### How to use? 
 
  * clone the repo
- * change the environment variables in `main.sh`
- * duplicate the template directory in the repo
- * configure the cronjob config as you wish
+ * delete all hidden directories
+ * change the configurable environment variables in `main.sh`
+ * configure the cronjob inside of template directory as you wish
+ * make sure permissions are set securely to prevent privilege escalation
  * run main.sh as root like a daemon
 
 ### Files
@@ -38,9 +39,4 @@ The main use case for it is for desktop users however nothing limits using it on
 
 ## How it works?
 
-When awecron runs it checks and runs through every directory in the repo (_except dotdirs_). It checks if the current time is more than the next run time in `timer` of the selected cronjob, if yes then it will run the `bin` and set the next run time.
-
-Note: Ignore dotdirs feature is useful when modifying the cronjob to prevent unexpected awecron errors.
-
-
-
+When awecron runs it checks and runs through every directory in the repo. It checks if the current time is more than in `timer` file of the selected cronjob, if yes then it will run the `bin` and set the `timer` again.

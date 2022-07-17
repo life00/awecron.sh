@@ -1,51 +1,33 @@
 #!/bin/bash
+# Note: the code is very commented for convenience and newbies (not to annoy)
 
-REPO=/home/user/awecron
-SUDO=sudo
-
-# lists all dirs in the repo into an array except dotdirs
-# this could be useful when modifying something and preventing unexpected errors
-function rundir() {
-        # gets the inputed string
-        while read -r -d $'\0' line; do
-                # puts into the array
-                arr+=("$line")
-        done < <(find $REPO/* -maxdepth 0 -type d -regextype posix-egrep -regex '.*' -print0) # inputs the string
-}
-
-function cronlog() {
-	# you can change how log looks below
-        printf "awecron ${user}: ${name}\n"
-}
+# configurable environment variables
+REPO=/home/user/awecron/ # location of the repo
+SUDO=sudo # option to choose between sudo or doas
 
 function main() {
-
-        rundir
-
-	# runs through everything in the array
-        for i in ${arr[@]}; do
+	# runs through all directories in the $REPO
+        for i in "$REPO"/*/; do
                 # gets the cronjob configuration variables
-                source $i/config
-
-                timer=$(cat $i/timer)
-
-                time=$(date +%s%N | cut -b1-10)
-
-                if (( $timer <= $time )); then
-                        cronlog
-                        # it is expected for script to run as root
-                        $SUDO -u $user $i/bin
-                        # setting the next run time
-                        echo $(( $time + $intr )) > $i/timer
+                source "$i/config"
+		# compares the timer with the current time
+		timer=$(cat "$i/timer")
+		time=$(date +%s%N | cut -b1-10)
+                if (( timer <= time )); then
+                        # logs events
+        		printf "awecron ${user}: ${name}\n"
+                        # runs the binary with specified user
+                        $SUDO -u $user "$i/bin"
+                        # sets the timer
+                        echo $(( time + intr )) > "$i/timer"
                 fi
         done
-
-        # cleaning the array
+        # cleans the array
         arr=()
 }
 
-
 while true; do
         main
+	# frequency of cron 
         sleep 60
 done
