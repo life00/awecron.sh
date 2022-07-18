@@ -11,15 +11,15 @@ function main() {
                 # gets the cronjob configuration variables
                 source "$i/config"
 		# compares the timer with the current time
-		timer=$(cat "$i/timer")
+		timer=$(<"$i/timer")
 		time=$(date +%s%N | cut -b1-10)
                 if (( timer <= time )); then
                         # logs events
-        		printf "awecron ${user}: ${name}\n"
-                        # runs the binary with specified user
-                        $SUDO -u $user "$i/bin"
+                        printf 'awecron %s: %s\n' "$user" "$name"
+			# runs the binary with specified user
+                        "$SUDO" -u "$user" "$i/bin"
                         # sets the timer
-                        echo $(( time + intr )) > "$i/timer"
+                        printf $(( time + intr )) > "$i/timer"
                 fi
         done
 }

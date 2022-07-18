@@ -5,6 +5,9 @@
 Awecron is a small and simple custom cron that has something similar between anacron and crontab.
 The main use case for it is for desktop users however nothing limits using it on a server.
 
+## Goal
+The aim of this project is to create extremely minimal software that user is supposed to understand and debug on the technical level.
+
 ### The advantages of using it:
  * extremely minimal and easy to read
  * would still run if misses cronjob run time (_if comparing with crontab_)
