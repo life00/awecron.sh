@@ -19,8 +19,6 @@ The aim of this project is to create extremely minimal software that user is sup
 
 * sudo / opendoas
 * bash
-* GNU date
-
 
 ### How to use? 
 

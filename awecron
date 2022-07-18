@@ -5,14 +5,14 @@
 REPO=/home/user/awecron/ # location of the repo
 SUDO=sudo # option to choose between sudo or doas
 
-function main() {
+function main {
 	# runs through all directories in the $REPO
         for i in "$REPO"/*/; do
                 # gets the cronjob configuration variables
                 source "$i/config"
 		# compares the timer with the current time
 		timer=$(<"$i/timer")
-		time=$(date +%s%N | cut -b1-10)
+		printf -v time '%(%s)T' # epoch time
                 if (( timer <= time )); then
                         # logs events
                         printf 'awecron %s: %s\n' "$user" "$name"
