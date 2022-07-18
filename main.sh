@@ -22,8 +22,6 @@ function main() {
                         echo $(( time + intr )) > "$i/timer"
                 fi
         done
-        # cleans the array
-        arr=()
 }
 
 while true; do
