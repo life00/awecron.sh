@@ -1,31 +1,111 @@
 #!/bin/bash
 # Note: the code is very commented for convenience and newbies (not to annoy)
 
-# configurable environment variables
+# configurable settings
 REPO=/home/user/awecron/ # location of the repo
-SUDO=sudo # option to choose between sudo or doas
 
-function main {
-	# runs through all directories in the $REPO
-        for i in "$REPO"/*/; do
-                # gets the cronjob configuration variables
-                source "$i/config"
-		# compares the timer with the current time
-		timer=$(<"$i/timer")
-		printf -v time '%(%s)T' # epoch time
-                if (( timer <= time )); then
-                        # logs events
-                        printf 'awecron %s: %s\n' "$user" "$name"
-			# runs the binary with specified user
-                        "$SUDO" -u "$user" "$i/bin"
-                        # sets the timer
-                        printf $(( time + intr )) > "$i/timer"
-                fi
-        done
-}
+# This is the minimum per-job interval; awecron can wake up more often if necessary.
+MIN_INTERVAL=30
+
+# What to do with that does not specify an interval, or which specifies an interval, that's too short?
+# Options are "disable" and "extend".
+INTERVAL_POLICY=disable
+
+# If a job fails, delay its next invocation for at least 10 minutes
+FAIL_DELAY=600
+
+# Set initial estimated sleep_until so that wake up anyway every
+# 10 minutes to check if any new files have been added
+RECHECK_INTERVAL=600
+
+SUDO() { sudo "$@"; } # option to choose between sudo or doas
+
+shopt -s nullglob
+
+# set SECONDS so it will automatically track the current epoch time
+printf -v SECONDS '%(%s)T'
 
 while true; do
-        main
-	# frequency of cron 
-        sleep 60
+	(( sleep_until = SECONDS + RECHECK_INTERVAL ))
+
+	# runs through all directories in the $REPO that contain a "timer" file
+	for t in "$REPO"/*/timer; do
+		d=${t%/*}
+		c=$d/config
+
+		# get the 'next run time'
+		read -r timer <"$t" || {
+			printf 'awecron: invalid job in %s (broken timer)\n' "$d"
+			mv -fv -- "$t" "$t.DISABLED"
+			continue
+		}
+
+		# compares the timer with the current time
+		time=$SECONDS
+		if (( timer <= time )) ; then
+		
+			# remove the timer file, so that if anything goes wrong, we won't
+			# spin re-running it each time
+			rm -f -- "$t"
+
+			# set defaults
+			interval=3600	# hourly by default
+			user=
+
+			# gets the cronjob configuration variables
+			[[ -s $c ]] &&
+			source "$c" || {
+				printf 'awecron: invalid job in %s (missing config)\n' "$d"
+				continue
+			}
+
+			(( interval >= MIN_INTERVAL )) || {
+				(( interval = MIN_INTERVAL ))
+				case $INTERVAL_POLICY in
+					extend)
+						printf 'awecron: job in %s (interval too short, extended to %d seconds)\n' "$d" "$interval"
+						printf '# AUTOMATIC EXTENSION OF INTERVAL\ninterval=%d\n' "$interval" >> "$c"
+						;;
+					*)
+						printf 'awecron: job in %s (interval too short, disabling)\n' "$d"
+						continue ;;
+				esac
+			}
+
+			[[ -n $user ]] &&
+			getent passwd "$user" >/dev/null || {
+				printf 'awecron: invalid job in %s (missing or invalid user)\n' "$d"
+				continue
+			}
+
+			# logs events
+			printf 'awecron %s: %s\n' "$user" "$name"
+
+			# runs the binary with specified user
+			SUDO -u "$user" "$i/bin" || {
+				if (( interval < FAIL_DELAY )) ; then
+					(( interval = FAIL_DELAY ))
+					printf 'awkcron: failing job in %s; delaying next run for %f minutes\n' "$d" "$((FAIL_DELAY/60))
+				else
+					printf 'awkcron: failing job in %s\n' "$d"
+				fi
+			}
+
+			# set the next timer
+			(( timer = time + interval ))
+			printf '%d\n' "$timer" >| "$t"
+		fi
+
+		# If the next invocation will need to run before the current
+		# "sleep_until" time, bring the latter forward so that the job
+		# can run at the correct time.
+		if (( timer < sleep_until )) ; then
+			(( sleep_until = timer ))
+		fi
+	done
+
+	sleep_time=$(( sleep_until - SECONDS ))
+	if (( sleep_time > 0 )) ; then
+		sleep "$sleep_time"
+	fi
 done
