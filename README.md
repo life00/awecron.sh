@@ -1,12 +1,10 @@
-### Note: Awecron requires root privileges and written by random guy on the internet. Understand the risks before using it.
+### Disclaimer: Awecron requires root privileges and written by random guy on the internet. Understand the risks before using it.
 
 # Awesome Cron
 ## Introduction
 Awecron is a small and simple custom cron that has something similar between anacron and crontab.
-The main use case for it is for desktop users however nothing limits using it on a server.
-
-## Goal
-The aim of this project is to create extremely minimal software that user is supposed to understand and debug on the technical level.
+The aim of this project is to create extremely minimal cron that user is supposed to understand and debug on the source code level.
+Awecron was written without considering user experience and expecting users to fully understand how it works.
 
 ### The advantages of using it:
  * extremely minimal and easy to read
@@ -17,14 +15,13 @@ The aim of this project is to create extremely minimal software that user is sup
 
 ### Dependencies
 
-* sudo / opendoas
 * bash
+* su
 
 ### How to use? 
 
  * clone the repo
  * delete all hidden directories
- * change the configurable environment variables in `main.sh`
  * configure the cronjob inside of template directory as you wish
  * make sure permissions are set securely to prevent privilege escalation
  * run main.sh as root like a daemon

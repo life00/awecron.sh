@@ -1,31 +1,29 @@
 #!/bin/bash
 # Note: the code is very commented for convenience and newbies (not to annoy)
 
-# configurable environment variables
-REPO=/home/user/awecron/ # location of the repo
-SUDO=sudo # option to choose between sudo or doas
-
-function main {
-	# runs through all directories in the $REPO
-        for i in "$REPO"/*/; do
-                # gets the cronjob configuration variables
-                source "$i/config"
-		# compares the timer with the current time
-		timer=$(<"$i/timer")
-		printf -v time '%(%s)T' # epoch time
-                if (( timer <= time )); then
-                        # logs events
-                        printf 'awecron %s: %s\n' "$user" "$name"
-			# runs the binary with specified user
-                        "$SUDO" -u "$user" "$i/bin"
-                        # sets the timer
-                        printf $(( time + intr )) > "$i/timer"
-                fi
-        done
+main () {
+         # runs through all dirs in the same dir as awecron
+        for d in "${BASH_SOURCE%/*}"/*/; do
+                 # parentheses are needed to contain variables inside
+		(	 # gets the cronjob configuration variables
+                	source "$d/config"
+                	 # compares the timer with the current epoch time
+                	timer=$(<"$d/timer")
+                	printf -v time "%(%s)T"
+                	if (( timer <= time )); then
+                        	 # logs events
+                        	printf "awecron %s: %s\n" "$user" "$name"
+                        	 # runs the binary with specified user
+				su "$user" -c "$d/bin"
+                        	 # sets the timer
+                        	printf $(( time + intr )) > "$d/timer"
+                	fi
+		)
+	done	
 }
 
 while true; do
         main
-	# frequency of cron 
+         # frequency of cron
         sleep 60
 done
