@@ -2,25 +2,37 @@
 # Note: the code is very commented for convenience and newbies (not to annoy)
 
 main () {
-         # runs through all dirs in the same dir as awecron
-        for d in "${BASH_SOURCE%/*}"/*/; do
+         # runs through all dirs that contain "timer" file
+        for t in "$repo"/*/timer; do
+		 # gets cronjob directory
+		d=${t%/*}
                  # parentheses are needed to contain variables inside
-		(	 # gets the cronjob configuration variables
-                	source "$d/config"
-                	 # compares the timer with the current epoch time
+		(	 # compares the timer with the current epoch time
                 	timer=$(<"$d/timer")
-                	printf -v time "%(%s)T"
+			 # gets current time by adding startup time and running time
+			(( time = startup + SECONDS ))
                 	if (( timer <= time )); then
+				 # gets the cronjob configuration variables
+                		source "$d/config"
                         	 # logs events
                         	printf "awecron %s: %s\n" "$user" "$name"
                         	 # runs the binary with specified user
 				su "$user" -c "$d/bin"
                         	 # sets the timer
-                        	printf $(( time + intr )) > "$d/timer"
+                        	printf "%d\n" $(( time + interval )) > "$d/timer"
                 	fi
 		)
 	done	
 }
+
+# prevents errors when there is no cronjob directories
+shopt -s nullglob
+
+# sets the awecron repo directory
+repo=${BASH_SOURCE[0]%/*}
+
+# gets the startup time of awecron
+printf -v startup "%(%s)T"
 
 while true; do
         main

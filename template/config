@@ -9,4 +9,4 @@ user=user
 # interval in seconds
 # Note: 60 seconds is the minimum
 # you can change the cron frequency to allow lower
-intr=60
+interval=60
