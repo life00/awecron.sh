@@ -12,14 +12,14 @@ main () {
 			 # gets current time by adding startup time and running time
 			(( time = startup + SECONDS ))
                 	if (( timer <= time )); then
+				 # deletes timer file to disable the cronjob if it is broken
+				rm "$d/timer"
 				 # gets the cronjob configuration variables
                 		source "$d/config"
                         	 # logs events
                         	printf "awecron %s: %s\n" "$user" "$name"
-                        	 # runs the binary with specified user
-				su "$user" -c "$d/bin"
-                        	 # sets the timer
-                        	printf "%d\n" $(( time + interval )) > "$d/timer"
+                        	 # runs the binary with specified user and then sets the timer if exit code is 0
+				su "$user" -c "$d/bin" && printf "%d\n" $(( time + interval )) > "$d/timer"
                 	fi
 		)
 	done	
