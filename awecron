@@ -16,10 +16,10 @@ main () {
 				rm "$d/timer"
 				 # gets the cronjob configuration variables
                 		source "$d/config"
-                        	 # logs events
-                        	printf "awecron %s: %s\n" "$user" "$name"
                         	 # runs the binary with specified user and then sets the timer if exit code is 0
 				su "$user" -c "$d/bin" && printf "%d\n" $(( time + interval )) > "$d/timer"
+				 # logs events
+                                printf "awecron %s: %s [%s]\n" "$user" "$name" "$?"
                 	fi
 		)
 	done	
