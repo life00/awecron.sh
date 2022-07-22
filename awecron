@@ -8,7 +8,7 @@ main () {
 		d=${t%/*}
                  # parentheses are needed to contain variables inside
 		(	 # compares the timer with the current epoch time
-                	timer=$(<"$d/timer")
+                	timer=$(stat -c "%Y" "$d/timer")
 			 # gets current time by adding startup time and running time
 			(( time = startup + SECONDS ))
                 	if (( timer <= time )); then
@@ -17,7 +17,7 @@ main () {
 				 # gets the cronjob configuration variables
                 		source "$d/config"
                         	 # runs the binary with specified user and then sets the timer if exit code is 0
-				su "$user" -c "$d/bin" && printf "%d\n" $(( time + interval )) > "$d/timer"
+				su "$user" -c "$d/bin" && touch -d "@$(( time + interval ))" "$d/timer"
 				 # logs events
                                 printf "awecron %s: %s [%s]\n" "$user" "$name" "$?"
                 	fi

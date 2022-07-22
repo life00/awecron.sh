@@ -17,6 +17,8 @@ Awecron was written without considering user experience and expecting users to f
 
 * bash
 * su
+* stat
+* touch
 
 ### How to use? 
 
@@ -30,6 +32,7 @@ Awecron was written without considering user experience and expecting users to f
 
  * `bin` is a binary or a shell script that supposed to run
  * `timer` is an essential file that is automatically changed after last run to when the next time the `bin` will run
+    * it uses last modification date of the file to set the timer
  * `config` contains configuration variables for the cronjob
     * `name` optional name for logs
     * `user` what user runs the `bin`
