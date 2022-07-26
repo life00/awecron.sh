@@ -20,6 +20,11 @@ Awecron was written without considering user experience and expecting users to f
 * stat
 * touch
 
+#### Tested on:
+
+* GNU coreutils
+* BusyBox
+
 ### How to use? 
 
  * clone the repo

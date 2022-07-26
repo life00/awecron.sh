@@ -17,7 +17,8 @@ main () {
 				 # gets the cronjob configuration variables
                 		source "$d/config"
                         	 # runs the binary with specified user and then sets the timer if exit code is 0
-				su "$user" -c "$d/bin" && touch -d "@$(( time + interval ))" "$d/timer"
+				  # Note: su part prevents code injection
+				su "$user" -s /bin/sh -c '"$1"' awecronrun "$d/bin" && touch -d "@$(( time + interval ))" "$d/timer"
 				 # logs events
                                 printf "awecron %s: %s [%s]\n" "$user" "$name" "$?"
                 	fi
