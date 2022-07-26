@@ -7,6 +7,5 @@ name=hello_world!
 user=user
 
 # interval in seconds
-# Note: 60 seconds is the minimum
-# you can change the cron frequency to allow lower
+# Note: 5 seconds is minimum by default
 interval=60

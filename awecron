@@ -25,17 +25,50 @@ main () {
 	done	
 }
 
-# prevents errors when there is no cronjob directories
+dynamic_sleep () {
+         # gets the soonest cronjob "next run time" in the $repo
+          # Note: keep in mind that the "next run time" is stored in last modification time
+        for t in "$repo"/*/timer; do
+                # oldest last modification time == soonest cronjob "next run time"
+                if [[ ! "$oldest" || "$t" -ot "$oldest" ]]; then
+                        oldest="$t"
+                fi
+        done
+         # checks if there is any timer file
+        if [[ -n "$oldest" ]]; then
+                 # gets the "next run time"
+                next=$(stat -c "%Y" "$oldest")
+        else
+                 # sets to max sleep duration if no timer file found
+                delay="$max"
+                return 0
+        fi
+         # converts "next run time" to sleep duration and applies limits if required
+        ((
+                delay = next - (SECONDS + startup),
+                delay <= max || ( delay = max ),
+                delay >= min || ( delay = min )
+        ))
+}
+
+
+# prevents errors when there is no timer files found
 shopt -s nullglob
 
 # sets the awecron repo directory
 repo=${BASH_SOURCE[0]%/*}
+
+# maximum sleep duration limit
+# Note: restart awecron after modifying cronjobs to not wait until awake
+max=600
+
+# minimum sleep duration limit
+min=5
 
 # gets the startup time of awecron
 printf -v startup "%(%s)T"
 
 while true; do
         main
-         # frequency of cron
-        sleep 60
+        dynamic_sleep && sleep $delay
 done
