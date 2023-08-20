@@ -7,5 +7,8 @@ name=hello_world!
 user=user
 
 # interval in seconds
-# Note: 5 seconds is minimum by default
-intrv=60
+  # Note: 5 seconds is minimum by default
+  # Other than regular format in seconds (as currently uncommented) you can also include basic mathematical operation for your convinience (it might take a tiny bit of performance though)
+  # example:
+  # intrv="60 * 60 * 24 * N" # where N is the number of days
+intrv=60 # one minute
