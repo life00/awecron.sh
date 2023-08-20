@@ -65,11 +65,13 @@ ds ()
 # prevents errors when there is no timer files found
 shopt -s nullglob
 
-# sets the awecron repo directory
+# sets the awecron repo directory the location of awecron script
+  # Note: This detection will only work if the awecron executable is located inside of the awecron repo
+  # It is recommended to set a static repo location instead, for security and stability reasons
 repo=${BASH_SOURCE[0]%/*}
 
 # maximum sleep duration limit
-# Note: restart awecron after modifying cronjobs to not wait until awake
+  # Note: restart awecron after modifying cronjobs to not wait until awake
 max=600
 
 # minimum sleep duration limit
