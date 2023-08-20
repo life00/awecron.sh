@@ -47,6 +47,28 @@ Awecron was written without considering user experience and expecting users to f
 
 When awecron runs it checks and runs through every directory in the repo. It checks if the current time is more than in `tmr` file of the selected cronjob, if yes then it will run the `run` and set the `tmr` again.
 
+## To-Do
+
+- error handling and optimization
+  - [ ] skip and disable cronjob if stuck/frozen
+    - error prevention and helps with the time skewing
+  - [ ] running cronjobs in parallel or cronjob running priority or cronjob time correction
+    - this is important to prevent time skewing for different cronjobs
+- creation of supplementary scripts
+  - [ ] create a separate `debugger` script that will allow the user to check for any errors or issues with awecron configuration, file permissions, etc.
+  - [ ] create a miscellaneous cronjob that cleans the logs of awecron 
+- other
+  - [ ] improve packaging and distribution system
+    - currently it is assumed that the user knows what everything does when installing the program, but this is not optimal
+    - a better packaging+distribution system will require defining where awecron components will live and how it will be installed
+      - using a script (*also not optimal*)
+      - using a package manager (*unlikely because complicated*)
+    - this will likely be resolved as the user base of awecron will grows
+  - [ ] rewrite awecron in Go
+    - this would be a rather complicated task considering that a lot of shell script functionality is used
+    - this might be implemented for experimental purposes
+
+
 ## Credits
 
 Special thanks to these guys:
