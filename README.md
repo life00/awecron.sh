@@ -46,3 +46,12 @@ Awecron was written without considering user experience and expecting users to f
 ## How it works?
 
 When awecron runs it checks and runs through every directory in the repo. It checks if the current time is more than in `tmr` file of the selected cronjob, if yes then it will run the `run` and set the `tmr` again.
+
+## Credits
+
+Special thanks to these guys:
+
+- [hello-smile6](https://github.com/hello-smile6) for creating a mirror of the repo and other contribution
+- [inferenceus](https://github.com/inferenceus) for fixing my bad English
+- [kurahaupo](https://github.com/kurahaupo) for suggesting significant improvements to the code 
+
