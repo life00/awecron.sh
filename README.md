@@ -29,20 +29,20 @@ Awecron was written without considering user experience and expecting users to f
 
  * clone the repo
  * delete all hidden directories
- * configure the cronjob inside of template directory as you wish
+ * configure the cronjob inside of an example template directory `ex` as you wish
  * make sure permissions are set securely to prevent privilege escalation
  * run main.sh as root like a daemon
 
 ### Files
 
- * `bin` is a binary or a shell script that supposed to run
- * `timer` is an essential file that is automatically changed after last run to when the next time the `bin` will run
+ * `run` is a binary or a shell script that supposed to run
+ * `tmr` is an essential file that is automatically changed after last run to when the next time the `run` will run
     * it uses last modification date of the file to set the timer
- * `config` contains configuration variables for the cronjob
+ * `cfg` contains configuration variables for the cronjob
     * `name` optional name for logs
-    * `user` what user runs the `bin`
-    * `intr` interval in seconds
+    * `user` what user runs the `run`
+    * `intrv` interval in seconds
 
 ## How it works?
 
-When awecron runs it checks and runs through every directory in the repo. It checks if the current time is more than in `timer` file of the selected cronjob, if yes then it will run the `bin` and set the `timer` again.
+When awecron runs it checks and runs through every directory in the repo. It checks if the current time is more than in `tmr` file of the selected cronjob, if yes then it will run the `run` and set the `tmr` again.

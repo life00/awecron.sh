@@ -3,25 +3,26 @@
 
 main () 
 {
-  # runs through all dirs that contain "timer" file
-  for t in "$repo"/*/timer
+  # runs through all dirs that contain "tmr" file
+  for t in "$repo"/*/tmr
   do
     # gets cronjob directory
     d=${t%/*}
     # parentheses are needed to contain variables inside
     (	# compares the timer with the current epoch time
-      timer=$(stat -c "%Y" "$d/timer")
+      tmr=$(stat -c "%Y" "$d/tmr")
       # gets current time by adding startup time and running time
-      (( time = startup + SECONDS ))
-      if (( timer <= time ))
+      (( time = start + SECONDS ))
+      if (( tmr <= time ))
       then
         # deletes timer file to disable the cronjob if it is broken
-        rm "$d/timer"
+        rm "$d/tmr"
         # gets the cronjob configuration variables
-        source "$d/config"
+        source "$d/cfg"
         # runs the binary with specified user and then sets the timer if exit code is 0
           # Note: su part prevents code injection
-        su "$user" -s /bin/sh -c '"$1"' awecronrun "$d/bin" && touch -d "@$(( time + interval ))" "$d/timer"
+        # su "$user" -s /bin/sh -c '"$1"' awecronrun "$d/run" && touch -d "@$(( time + intrv ))" "$d/tmr"
+        "$d/run" && touch -d "@$(( time + intrv ))" "$d/tmr"
         # logs events
         printf "awecron %s: %s [%s]\n" "$user" "$name" "$?"
       fi
@@ -29,23 +30,24 @@ main ()
 	done	
 }
 
-dynamic_sleep ()
+# dynamic sleep
+ds ()
 {
   # gets the soonest cronjob "next run time" in the $repo
     # Note: keep in mind that the "next run time" is stored in last modification time
-  for t in "$repo"/*/timer
+  for t in "$repo"/*/tmr
   do
     # oldest last modification time == soonest cronjob "next run time"
-    if [[ ! "$oldest" || "$t" -ot "$oldest" ]]
+    if [[ ! "$old" || "$t" -ot "$old" ]]
     then
-      oldest="$t"
+      old="$t"
     fi
   done
   # checks if there is any timer file
-  if [[ -n "$oldest" ]]
+  if [[ -n "$old" ]]
   then
     # gets the "next run time"
-    next=$(stat -c "%Y" "$oldest")
+    next=$(stat -c "%Y" "$old")
   else
     # sets to max sleep duration if no timer file found
     delay="$max"
@@ -53,7 +55,7 @@ dynamic_sleep ()
   fi
   # converts "next run time" to sleep duration and applies limits if required
   ((
-    delay = next - (SECONDS + startup),
+    delay = next - (SECONDS + start),
     delay <= max || ( delay = max ),
     delay >= min || ( delay = min )
   ))
@@ -74,10 +76,10 @@ max=600
 min=5
 
 # gets the startup time of awecron
-printf -v startup "%(%s)T"
+printf -v start "%(%s)T"
 
 while true
 do
   main
-  dynamic_sleep && sleep "$delay"
+  ds && sleep "$delay"
 done

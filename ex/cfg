@@ -8,4 +8,4 @@ user=user
 
 # interval in seconds
 # Note: 5 seconds is minimum by default
-interval=60
+intrv=60
