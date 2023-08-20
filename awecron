@@ -21,8 +21,7 @@ main ()
         source "$d/cfg"
         # runs the binary with specified user and then sets the timer if exit code is 0
           # Note: su part prevents code injection
-        # su "$user" -s /bin/sh -c '"$1"' awecronrun "$d/run" && touch -d "@$(( time + intrv ))" "$d/tmr"
-        "$d/run" && touch -d "@$(( time + intrv ))" "$d/tmr"
+        su "$user" -s /bin/sh -c '"$1"' awecronrun "$d/run" && touch -d "@$(( time + intrv ))" "$d/tmr"
         # logs events
         printf "awecron %s: %s [%s]\n" "$user" "$name" "$?"
       fi
