@@ -6,9 +6,22 @@ name=hello_world!
 # what user runs the bin
 user=user
 
-# interval in seconds
+# run interval in seconds (supports math format)
   # Note: 5 seconds is minimum by default
   # Other than regular format in seconds (as currently uncommented) you can also include basic mathematical operation for your convinience (it might take a tiny bit of performance though)
   # example:
   # intrv="60 * 60 * 24 * N" # where N is the number of days
-intrv=60 # one minute
+run=60 # one minute
+
+# error run interval in seconds (supports math format)
+  # Note: This is an additional feature that allows to rerun the cronjob with a special interval if it exited with an error code set below
+  # Especially useful in situation when the cronjob errored because of temporary conditions (e.g. no internet access)
+  # It will run indefinitely until it would error with success or non ercode code
+  # Even though it is not a standard feature, it is helpful and it does not require significant code changes
+errun=5
+
+# error code run (standard error code format)
+  # Note: this is an error code that the cronjob should exit to trigger the error run
+  # It is recommended to read the following before choosing an error code: https://tldp.org/LDP/abs/html/exitcodes.html
+ercode=69
+

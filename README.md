@@ -31,7 +31,7 @@ Awecron was written without considering user experience and expecting users to f
  * delete all hidden directories
  * configure the cronjob inside of an example template directory `ex` as you wish
  * make sure permissions are set securely to prevent privilege escalation
- * run main.sh as root like a daemon
+ * run `awecron` as root like a daemon
 
 ### Files
 
@@ -41,7 +41,7 @@ Awecron was written without considering user experience and expecting users to f
  * `cfg` contains configuration variables for the cronjob
     * `name` optional name for logs
     * `user` what user runs the `run`
-    * `intrv` interval in seconds
+    * `run` run interval in seconds
 
 ## How it works?
 

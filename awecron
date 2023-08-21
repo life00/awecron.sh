@@ -19,11 +19,15 @@ main ()
         rm "$d/tmr"
         # gets the cronjob configuration variables
         source "$d/cfg"
-        # runs the binary with specified user and then sets the timer if exit code is 0
+        # runs the binary with specified user
           # Note: su part prevents code injection
-        su "$user" -s /bin/sh -c '"$1"' awecronrun "$d/run" && touch -d "@$(( time + intrv ))" "$d/tmr"
+        su "$user" -s /bin/sh -c '"$1"' awecronrun "$d/run" && \
+          # sets the timer if exit code is 0
+          ec=$? && touch -d "@$(( time + run ))" "$d/tmr" || \
+          # OR checks for ercode match and sets errun interval
+          ec=$? && [[ "$ec" == "$ercode" ]] && touch -d "@$(( time + errun ))" "$d/tmr" 
         # logs events
-        printf "awecron %s: %s [%s]\n" "$user" "$name" "$?"
+        printf "awecron %s: %s [%s]\n" "$user" "$name" "$ec"
       fi
     )
 	done	
