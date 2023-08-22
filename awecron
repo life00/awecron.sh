@@ -6,10 +6,12 @@ main ()
   # runs through all dirs that contain "tmr" file
   for t in "$repo"/*/tmr
   do
-    # gets cronjob directory
-    d=${t%/*}
-    # parentheses are needed to contain variables inside
-    (	# compares the timer with the current epoch time
+    # parentheses are needed to contain the environment inside
+    (	# gets cronjob directory
+      d="${t%/*}"
+      # gets the cronjob name
+      name="${d##*/}"
+      # compares the timer with the current epoch time
       tmr=$(stat -c "%Y" "$d/tmr")
       # gets current time by adding startup time and running time
       (( time = start + SECONDS ))
@@ -21,13 +23,13 @@ main ()
         source "$d/cfg"
         # runs the binary with specified user
           # Note: su part prevents code injection
-        su "$user" -s /bin/sh -c '"$1"' awecronrun "$d/run" && \
+        su "$user" -s /bin/sh -c '"$1"' run "$d/run" && \
           # sets the timer if exit code is 0
           ec=$? && touch -d "@$(( time + run ))" "$d/tmr" || \
           # OR checks for ercode match and sets errun interval
           ec=$? && [[ "$ec" == "$ercode" ]] && touch -d "@$(( time + errun ))" "$d/tmr" 
         # logs events
-        printf "awecron %s: %s [%s]\n" "$user" "$name" "$ec"
+        log "cronjob run" "$user" "$name" "$ec"
       fi
     )
 	done	
@@ -64,6 +66,39 @@ ds ()
   ))
 }
 
+# error check
+ercheck()
+{
+  for t in "$repo"/*/tmr
+  do
+    # parentheses are needed to contain the environment inside
+    ( # gets cronjob directory
+      d="${t%/*}"
+      # gets the cronjob name
+      name="${d##*/}"
+      # checks if config exists and it is a file 
+      [[ -f "$d/cfg" ]] && source "$d/cfg" || \
+        log "cronjob configuration file is missing" "$user" "$name" "$?" "$d"
+      # checks that run is executable 
+      [[ -x "$d/run" ]] || \
+        log "cronjob run file is missing or not executable" "$user" "$name" "$?" "$d"
+      # checks if config variables are integers
+      [[ "$run" =~ ^[0-9]+$ && "$errun" =~ ^[0-9]+$ ]] || \
+        log "some integer cronjob config variable is incorrectly set or does not exist" "$user" "$name" "$?" "$d"
+      # checks if the user exists
+      id -u "$user" &> /dev/null || \
+        log "cronjob user config variable is incorrectly set or does not exist" "$user" "$name" "$?" "$d"
+    )
+  done
+}
+
+# logging formatting
+log()
+{
+  printf "awecron (%s) {%s} [%s]: %s\n" "${2:-?}" "${3:-?}" "${4:-?}" "${1:-?}"
+  [[ -f "$5/tmr" ]] && rm "$5/tmr"
+}
+
 
 # prevents errors when there is no timer files found
 shopt -s nullglob
@@ -80,8 +115,18 @@ max=600
 # minimum sleep duration limit
 min=5
 
+# global error code for the error run
+  # Note: this is an error code that the cronjob should exit to trigger the error run
+  # You may set it per cronjob in cfg file
+  # It is recommended to read the following before choosing an error code: https://tldp.org/LDP/abs/html/exitcodes.html
+ercode=69
+
 # gets the startup time of awecron
 printf -v start "%(%s)T"
+
+# does an initial error check
+  # Note: this is an optional feature that can be easily disabled by deleting the function and this function call
+ercheck
 
 while true
 do

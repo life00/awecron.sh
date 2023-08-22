@@ -1,8 +1,5 @@
 #!/bin/bash
 
-# optional name for logging
-name=hello_world!
-
 # what user runs the bin
 user=user
 
@@ -19,9 +16,4 @@ run=60 # one minute
   # It will run indefinitely until it would error with success or non ercode code
   # Even though it is not a standard feature, it is helpful and it does not require significant code changes
 errun=5
-
-# error code run (standard error code format)
-  # Note: this is an error code that the cronjob should exit to trigger the error run
-  # It is recommended to read the following before choosing an error code: https://tldp.org/LDP/abs/html/exitcodes.html
-ercode=69
 

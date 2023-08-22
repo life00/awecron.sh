@@ -39,9 +39,9 @@ Awecron was written without considering user experience and expecting users to f
  * `tmr` is an essential file that is automatically changed after last run to when the next time the `run` will run
     * it uses last modification date of the file to set the timer
  * `cfg` contains configuration variables for the cronjob
-    * `name` optional name for logs
     * `user` what user runs the `run`
     * `run` run interval in seconds
+    * `errun` error code run interval in seconds
 
 ## How it works?
 
