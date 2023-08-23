@@ -7,7 +7,9 @@ main ()
   for t in "$repo"/*/tmr
   do
     # parentheses are needed to contain the environment inside
-    (	# gets cronjob directory
+    (	# a bit of error prevention
+      set -eu
+      # gets cronjob directory
       d="${t%/*}"
       # gets the cronjob name
       name="${d##*/}"
@@ -23,11 +25,19 @@ main ()
         source "$d/cfg"
         # runs the binary with specified user
           # Note: su part prevents code injection
-        su "$user" -s /bin/sh -c '"$1"' run "$d/run" && \
+        if su "$user" -s /bin/sh -c '"$1"' run "$d/run"
+        then
           # sets the timer if exit code is 0
-          ec=$? && touch -d "@$(( time + run ))" "$d/tmr" || \
-          # OR checks for ercode match and sets errun interval
-          ec=$? && [[ "$ec" == "$ercode" ]] && touch -d "@$(( time + errun ))" "$d/tmr" 
+          ec="$?"
+          touch -d "@$(( time + run ))" "$d/tmr"
+        else
+          # checks for ercode match and sets errun interval
+          ec="$?" 
+          if [[ "$ec" == "$ercode" ]] 
+          then
+            touch -d "@$(( time + errun ))" "$d/tmr" 
+          fi
+        fi
         # logs events
         log "cronjob run" "$user" "$name" "$ec"
       fi
@@ -77,17 +87,35 @@ ercheck()
       # gets the cronjob name
       name="${d##*/}"
       # checks if config exists and it is a file 
-      [[ -f "$d/cfg" ]] && source "$d/cfg" || \
-        log "cronjob configuration file is missing" "$user" "$name" "$?" "$d"
+      if [[ -f "$d/cfg" ]]
+      then
+        source "$d/cfg"
+      else
+        log "cronjob configuration file is missing" "$user" "$name" "1" 
+        rm "$d/tmr"
+        return 1
+      fi
       # checks that run is executable 
-      [[ -x "$d/run" ]] || \
-        log "cronjob run file is missing or not executable" "$user" "$name" "$?" "$d"
+      if ! [[ -x "$d/run" ]]
+      then
+        log "cronjob run file is missing or not executable" "$user" "$name" "1" 
+        rm "$d/tmr"
+        return 1
+      fi
       # checks if config variables are integers
-      [[ "$run" =~ ^[0-9]+$ && "$errun" =~ ^[0-9]+$ ]] || \
-        log "some integer cronjob config variable is incorrectly set or does not exist" "$user" "$name" "$?" "$d"
+      if ! [[ "$run" =~ ^[0-9]+$ && "$errun" =~ ^[0-9]+$ ]]
+      then
+        log "some integer cronjob config variable is incorrectly set or does not exist" "$user" "$name" "1"
+        rm "$d/tmr"
+        return 1
+      fi
       # checks if the user exists
-      id -u "$user" &> /dev/null || \
-        log "cronjob user config variable is incorrectly set or does not exist" "$user" "$name" "$?" "$d"
+      if ! id -u "$user" &> /dev/null 
+      then
+        log "cronjob user config variable is incorrectly set or does not exist" "$user" "$name" "1" 
+        rm "$d/tmr"
+        return 1
+      fi
     )
   done
 }
@@ -96,7 +124,6 @@ ercheck()
 log()
 {
   printf "awecron (%s) {%s} [%s]: %s\n" "${2:-?}" "${3:-?}" "${4:-?}" "${1:-?}"
-  [[ -f "$5/tmr" ]] && rm "$5/tmr"
 }
 
 
@@ -106,7 +133,7 @@ shopt -s nullglob
 # sets the awecron repo directory the location of awecron script
   # Note: This detection will only work if the awecron executable is located inside of the awecron repo
   # It is recommended to set a static repo location instead, for security and stability reasons
-repo=${BASH_SOURCE[0]%/*}
+repo="${BASH_SOURCE[0]%/*}"
 
 # maximum sleep duration limit
   # Note: restart awecron after modifying cronjobs to not wait until awake
