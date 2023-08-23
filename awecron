@@ -23,23 +23,28 @@ main ()
         rm "$d/tmr"
         # gets the cronjob configuration variables
         source "$d/cfg"
-        # runs the binary with specified user
+        # runs the binary with specified user and does exit code checking
           # Note: su part prevents code injection
         if su "$user" -s /bin/sh -c '"$1"' run "$d/run"
         then
           # sets the timer if exit code is 0
           ec="$?"
           touch -d "@$(( time + run ))" "$d/tmr"
+          # logs events
+          log "cronjob run success" "$user" "$name" "$ec"
         else
           # checks for ercode match and sets errun interval
           ec="$?" 
-          if [[ "$ec" == "$ercode" ]] 
+          if ! [[ "$ec" == "$ercode" ]] 
           then
+            # logs events
+            log "cronjob run failed" "$user" "$name" "$ec"
+          else
             touch -d "@$(( time + errun ))" "$d/tmr" 
+            # logs events
+            log "cronjob error run success" "$user" "$name" "$ec"
           fi
         fi
-        # logs events
-        log "cronjob run" "$user" "$name" "$ec"
       fi
     )
 	done	
@@ -79,6 +84,13 @@ ds ()
 # error check
 ercheck()
 {
+  # checks that global awecron config variables are integers
+  if ! [[ "$max" =~ ^[0-9]+$ && "$min" =~ ^[0-9]+$ && "$ercode" =~ ^[0-9]+$ ]]
+  then
+    log "some awecron global config variable is incorrectly set or does not exist" "?" "?" "1" 
+    exit 1
+  fi
+
   for t in "$repo"/*/tmr
   do
     # parentheses are needed to contain the environment inside
@@ -135,18 +147,22 @@ shopt -s nullglob
   # It is recommended to set a static repo location instead, for security and stability reasons
 repo="${BASH_SOURCE[0]%/*}"
 
-# maximum sleep duration limit
-  # Note: restart awecron after modifying cronjobs to not wait until awake
-max=600
+# checks if repo directory exists
+if ! [[ -d "$repo" ]]
+then
+  log "awecron repo directory is incorrectly set or does not exist" "?" "?" "1" 
+  exit 1
+fi
 
-# minimum sleep duration limit
-min=5
+# checks if global awecron config file exists and runs it
+if [[ -f "$repo/cfg" ]]
+then
+  source "$repo/cfg"
+else
+  log "global awecron config file does not exist" "?" "?" "1" 
+  exit 1
+fi
 
-# global error code for the error run
-  # Note: this is an error code that the cronjob should exit to trigger the error run
-  # You may set it per cronjob in cfg file
-  # It is recommended to read the following before choosing an error code: https://tldp.org/LDP/abs/html/exitcodes.html
-ercode=69
 
 # gets the startup time of awecron
 printf -v start "%(%s)T"

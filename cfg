@@ -1,0 +1,15 @@
+#!/bin/bash
+
+# maximum sleep duration limit
+  # Note: restart awecron after modifying cronjobs to not wait until awake
+max=600
+
+# minimum sleep duration limit
+min=5
+
+# global error code for the error run
+  # Note: this is an error code that the cronjob should exit to trigger the error run
+  # You may set it per cronjob in cfg file
+  # It is recommended to read the following before choosing an error code: https://tldp.org/LDP/abs/html/exitcodes.html
+ercode=69
+
