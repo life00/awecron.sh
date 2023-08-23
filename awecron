@@ -163,13 +163,12 @@ else
   exit 1
 fi
 
-
-# gets the startup time of awecron
-printf -v start "%(%s)T"
-
 # does an initial error check
   # Note: this is an optional feature that can be easily disabled by deleting the function and this function call
 ercheck
+
+# gets the startup time of awecron
+printf -v start "%(%s)T"
 
 while true
 do

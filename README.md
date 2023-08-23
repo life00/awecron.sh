@@ -55,7 +55,7 @@ When awecron runs it checks and runs through every directory in the repo. It che
   - [ ] running cronjobs in parallel or cronjob running priority or cronjob time correction
     - this is important to prevent time skewing for different cronjobs
 - creation of supplementary scripts
-  - [ ] create a separate `debugger` script that will allow the user to check for any errors or issues with awecron configuration, file permissions, etc.
+  - [x] ~~create a separate `debugger` script that will allow the user to check for any errors or issues with awecron configuration, file permissions, etc.~~ Awecron checks for errors on statups
   - [ ] create a miscellaneous cronjob that cleans the logs of awecron 
 - other
   - [ ] improve packaging and distribution system
