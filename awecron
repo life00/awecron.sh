@@ -7,47 +7,45 @@ main ()
   for t in "$repo"/*/tmr
   do
     # parentheses are needed to contain the environment inside
-    (	# a bit of error prevention
-      set -eu
-      # gets cronjob directory
-      d="${t%/*}"
-      # gets the cronjob name
-      name="${d##*/}"
-      # compares the timer with the current epoch time
-      tmr=$(stat -c "%Y" "$d/tmr")
-      # gets current time by adding startup time and running time
-      (( time = start + SECONDS ))
-      if (( tmr <= time ))
-      then
-        # deletes timer file to disable the cronjob if it is broken
-        rm "$d/tmr"
-        # gets the cronjob configuration variables
-        source "$d/cfg"
-        # runs the binary with specified user and does exit code checking
-          # Note: su part prevents code injection
-        if su "$user" -s /bin/sh -c '"$1"' run "$d/run"
-        then
-          # sets the timer if exit code is 0
-          ec="$?"
-          touch -d "@$(( time + run ))" "$d/tmr"
-          # logs events
-          log "cronjob run success" "$user" "$name" "$ec"
-        else
-          # checks for ercode match and sets errun interval
-          ec="$?" 
-          if ! [[ "$ec" == "$ercode" ]] 
-          then
-            # logs events
-            log "cronjob run failed" "$user" "$name" "$ec"
-          else
-            touch -d "@$(( time + errun ))" "$d/tmr" 
-            # logs events
-            log "cronjob error run success" "$user" "$name" "$ec"
-          fi
-        fi
-      fi
-    )
+    (run)
 	done	
+}
+
+# function that actually runs on a specific cronjob
+run()
+{
+  # gets cronjob directory
+  d="${t%/*}"
+  # gets the cronjob name
+  name="${d##*/}"
+  # compares the timer with the current epoch time
+  tmr=$(stat -c "%Y" "$d/tmr")
+  # gets current time by adding startup time and running time
+  (( time = start + SECONDS ))
+  if (( tmr <= time ))
+  then
+    # deletes timer file to disable the cronjob if it is broken
+    rm "$d/tmr"
+    # gets the cronjob configuration variables
+    source "$d/cfg"
+    # runs the binary with specified user and does 
+      # Note: su part prevents code injection
+    if su "$user" -s /bin/sh -c '"$1"' run "$d/run"
+    # save error code for later
+    ec=$?
+    # exit code checking
+    if [[ "$ec" = "0" ]]
+    then
+      log "cronjob run success"
+      touch -d "@$(( time + run ))" "$d/tmr"
+    else
+      log "cronjob run error"
+      if [[ "$ec" == "$ercode" ]] 
+      then
+        touch -d "@$(( time + errun ))" "$d/tmr" 
+      fi
+    fi
+  fi
 }
 
 # dynamic sleep
@@ -87,7 +85,7 @@ ercheck()
   # checks that global awecron config variables are integers
   if ! [[ "$max" =~ ^[0-9]+$ && "$min" =~ ^[0-9]+$ && "$ercode" =~ ^[0-9]+$ ]]
   then
-    log "some awecron global config variable is incorrectly set or does not exist" "?" "?" "1" 
+    log "some awecron global config variable is incorrectly set or does not exist" 
     exit 1
   fi
 
@@ -103,28 +101,28 @@ ercheck()
       then
         source "$d/cfg"
       else
-        log "cronjob configuration file is missing" "$user" "$name" "1" 
+        log "cronjob configuration file is missing" 
         rm "$d/tmr"
         return 1
       fi
       # checks that run is executable 
       if ! [[ -x "$d/run" ]]
       then
-        log "cronjob run file is missing or not executable" "$user" "$name" "1" 
+        log "cronjob run file is missing or not executable" 
         rm "$d/tmr"
         return 1
       fi
       # checks if config variables are integers
       if ! [[ "$run" =~ ^[0-9]+$ && "$errun" =~ ^[0-9]+$ ]]
       then
-        log "some integer cronjob config variable is incorrectly set or does not exist" "$user" "$name" "1"
+        log "some integer cronjob config variable is incorrectly set or does not exist"
         rm "$d/tmr"
         return 1
       fi
       # checks if the user exists
       if ! id -u "$user" &> /dev/null 
       then
-        log "cronjob user config variable is incorrectly set or does not exist" "$user" "$name" "1" 
+        log "cronjob user config variable is incorrectly set or does not exist" 
         rm "$d/tmr"
         return 1
       fi
@@ -135,7 +133,7 @@ ercheck()
 # logging formatting
 log()
 {
-  printf "awecron (%s) {%s} [%s]: %s\n" "${2:-?}" "${3:-?}" "${4:-?}" "${1:-?}"
+  printf "awecron (%s) {%s} [%s]: %s\n" "${user:-?}" "${name:-?}" "${ec:-?}" "$1"
 }
 
 
@@ -150,7 +148,7 @@ repo="${BASH_SOURCE[0]%/*}"
 # checks if repo directory exists
 if ! [[ -d "$repo" ]]
 then
-  log "awecron repo directory is incorrectly set or does not exist" "?" "?" "1" 
+  log "awecron repo directory is incorrectly set or does not exist" 
   exit 1
 fi
 
@@ -159,7 +157,7 @@ if [[ -f "$repo/cfg" ]]
 then
   source "$repo/cfg"
 else
-  log "global awecron config file does not exist" "?" "?" "1" 
+  log "global awecron config file does not exist"
   exit 1
 fi
 
