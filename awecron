@@ -30,7 +30,7 @@ run()
     source "$d/cfg"
     # runs the binary with specified user and does 
       # Note: su part prevents code injection
-    if su "$user" -s /bin/sh -c '"$1"' run "$d/run"
+    su "$user" -s /bin/sh -c '"$1"' run "$d/run"
     # save error code for later
     ec=$?
     # exit code checking
