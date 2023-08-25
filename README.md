@@ -41,7 +41,7 @@ Awecron was written without considering user experience and expecting users to f
  * `cfg` contains configuration variables for the cronjob
     * `user` what user runs the `run`
     * `run` run interval in seconds
-    * `errun` error code run interval in seconds
+    * `talr` *try again later* run interval in seconds
 
 ## How it works?
 

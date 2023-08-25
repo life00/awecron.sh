@@ -10,10 +10,10 @@ user=user
   # intrv="60 * 60 * 24 * N" # where N is the number of days
 run=60 # one minute
 
-# error run interval in seconds (supports math format)
+# "try again later" run interval in seconds (supports math format)
   # Note: This is an additional feature that allows to rerun the cronjob with a special interval if it exited with an error code set below
   # Especially useful in situation when the cronjob errored because of temporary conditions (e.g. no internet access)
   # It will run indefinitely until it would error with success or non ercode code
   # Even though it is not a standard feature, it is helpful and it does not require significant code changes
-errun=5
+talr=5
 
