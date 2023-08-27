@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Note: the code is very commented for convenience and newbies (not to annoy)
 
 main () 
