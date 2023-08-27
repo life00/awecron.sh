@@ -45,10 +45,11 @@ run()
       touch -d "@$(( time + run ))" "$d/tmr"
     else
       log "cronjob run error"
-      if [[ "$ec" == "$talc" ]] 
-      then
-        touch -d "@$(( time + talr ))" "$d/tmr" 
-      fi
+      # uncomment the following for "try again later" cronjob run feature
+      # if [[ "$ec" == "$talc" ]] 
+      # then
+      #   touch -d "@$(( time + talr ))" "$d/tmr" 
+      # fi
     fi
 }
 
@@ -87,7 +88,7 @@ ds ()
 ercheck()
 {
   # checks that global awecron config variables are integers
-  if ! [[ "$max" =~ ^[0-9]+$ && "$min" =~ ^[0-9]+$ && "$talc" =~ ^[0-9]+$ ]]
+  if ! [[ "$max" =~ ^[0-9]+$ && "$min" =~ ^[0-9]+$ ]]
   then
     log "some awecron global config variable is incorrectly set or does not exist" 
     exit 1
@@ -116,8 +117,8 @@ ercheck()
         rm "$d/tmr"
         return 1
       fi
-      # checks if config variables are integers
-      if ! [[ "$run" =~ ^[0-9]+$ && "$talr" =~ ^[0-9]+$ ]]
+      # checks if run variable is an integer
+      if ! [[ "$run" =~ ^[0-9]+$ ]]
       then
         log "some integer cronjob config variable is incorrectly set or does not exist"
         rm "$d/tmr"

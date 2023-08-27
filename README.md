@@ -41,11 +41,19 @@ Awecron was written without considering user experience and expecting users to f
  * `cfg` contains configuration variables for the cronjob
     * `user` what user runs the `run`
     * `run` run interval in seconds
-    * `talr` *try again later* run interval in seconds
 
 ## How it works?
 
 When awecron runs it checks and runs through every directory in the repo. It checks if the current time is more than in `tmr` file of the selected cronjob, if yes then it will run the `run` and set the `tmr` again.
+
+## Experimental Features
+
+The following are features that for some reason (*usually related to stability or performance*) are not enabled by default in awecron. To enable a feature from this list you will have to manually uncomment code where comments mention the feature.
+
+- parallelism
+  - *description*
+- "try again later" cronjob run
+  - *description*
 
 ## To-Do
 
