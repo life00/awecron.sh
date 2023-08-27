@@ -48,11 +48,13 @@ When awecron runs it checks and runs through every directory in the repo. It che
 
 ## Experimental Features
 
-The following are features that for some reason (*usually related to stability or performance*) are not enabled by default in awecron. To enable a feature from this list you will have to manually uncomment code where comments mention the feature.
+The following are features that for some reason (*usually related to stability or performance*) are not enabled by default in awecron. They are planned to be eventually improved, fully implemented or removed. To enable a feature from this list you will have to manually uncomment code where comments mention the feature.
 
 - parallelism
   - *description*
 - "try again later" cronjob run
+  - *description*
+- timeout
   - *description*
 
 ## To-Do
