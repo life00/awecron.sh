@@ -4,7 +4,7 @@
 main () 
 {
   # runs through all dirs that contain "tmr" file
-  for t in "$repo"/*/tmr
+  for t in $(ls -trd "$repo"/*/tmr)
   do
     # parentheses are needed to contain the environment inside
     ( # error prevention
