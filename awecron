@@ -8,7 +8,7 @@ main ()
   do
     # parentheses are needed to contain the environment inside
     ( # error prevention
-      set -eu
+      set -u
       # gets cronjob directory
       d="${t%/*}"
       # gets the cronjob name
