@@ -22,7 +22,7 @@ main ()
         run
       fi
     ) # & # uncomment to enable parallelism
-	done	
+  done	
   # wait # uncomment to enable parallelism
 }
 
@@ -39,7 +39,7 @@ run()
     # timeout 10 \
     su "$user" -s /bin/sh -c '"$1"' run "$d/run"
     # save error code for later
-    ec=$?
+    ec="$?"
     # exit code checking
     if [[ "$ec" = "0" ]]
     then
