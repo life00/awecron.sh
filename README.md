@@ -1,6 +1,7 @@
 ### Disclaimer: Awecron requires root privileges and written by random guy on the internet. Understand the risks before using it.
 
-# Awesome Cron
+# Awesome Cron 
+## Note: readme does not reflect the actual state of awecron (yet)
 ## Introduction
 Awecron is a small and simple custom cron that has something similar between anacron and crontab.
 The aim of this project is to create extremely minimal cron that user is supposed to understand and debug on the source code level.
@@ -73,6 +74,7 @@ The following are features that for some reason (*usually related to stability o
     - provide more detailed description of experimental features
     - add latest version of bash as recommended 
     - move all documentation to github wiki?
+    - generally make the readme reflect all the changes to awecron
   - [ ] improve code comments
   - [ ] create a complete release (and tag) v1.0
     - with a signed package
