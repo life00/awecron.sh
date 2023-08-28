@@ -59,15 +59,40 @@ The following are features that for some reason (*usually related to stability o
 
 ## To-Do
 
+- documentation
+  - [ ] notes when rewriting `README.md`
+    - spell and grammar check
+    - note that inspired by interface of runit
+    - fully move the documentation of how awecron config works to readme
+    - improve the explanation of how awecron works and its components
+    - write the full feature set (*e.g. if cronjob errors then it will be disabled*)
+    - clarify that user is expected to modify the file for configuration
+    - improve and modify the github's awecron description
+    - user may overwrite global variables or other automatically set variables per cronjob or through global awecron config
+    - users are encouraged to change awecron to their needs (assuming they know what they are doing)
+    - provide more detailed description of experimental features
+    - add latest version of bash as recommended 
+    - move all documentation to github wiki?
+  - [ ] improve code comments
+  - [ ] create a complete release (and tag) v1.0
+    - with a signed package
+      - have a tar.gz file that will be untared into `/` and so awecron will be installed
+      - service files will have to be added manually
+      - provide instructions
+    - test on all supported platforms
+  - [ ] maybe create an awecron logo to make readme look nice?
 - error handling and optimization
-  - [ ] skip and disable cronjob if stuck/frozen
-    - error prevention and helps with the time skewing
-  - [ ] running cronjobs in parallel or cronjob running priority or cronjob time correction
-    - this is important to prevent time skewing for different cronjobs
+  - ...
 - creation of supplementary scripts
   - [x] ~~create a separate `debugger` script that will allow the user to check for any errors or issues with awecron configuration, file permissions, etc.~~ Awecron checks for errors on statups
-  - [ ] create a miscellaneous cronjob that cleans the logs of awecron 
+  - [ ] create a miscellaneous cronjob that cleans the logs of awecron (*might be unnecessary with right service config?*)
+- resolve experimental features
+  - [ ] parallelism
+  - [ ] *try again later* cronjob error run
+  - [ ] cronjob timeout
 - other
+  - [ ] add service files (systemd, openrc, runit) for awecron
+  - [ ] add macOS version of awecron with a service file and instructions
   - [ ] improve packaging and distribution system
     - currently it is assumed that the user knows what everything does when installing the program, but this is not optimal
     - a better packaging+distribution system will require defining where awecron components will live and how it will be installed
