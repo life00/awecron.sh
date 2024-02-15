@@ -1,6 +1,9 @@
 #!/bin/bash
 # Note: the code is very commented for convenience and newbies (not to annoy)
 
+# SPDX-License-Identifier: MIT
+
+
 main () {
          # runs through all dirs that contain "timer" file
         for t in "$repo"/*/timer; do
