@@ -33,7 +33,7 @@ run() {
 	# Note: su part prevents code injection
 	# uncomment the following for cronjob timeout feature
 	# timeout 10 \
-	su "$user" -s /bin/sh -c '"$1"' run "$d/run"
+	su "$user" -P -s /bin/sh -c '"$1"' run "$d/run"
 	# save error code for later
 	ec="$?"
 	# exit code checking
