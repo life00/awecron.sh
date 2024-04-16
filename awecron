@@ -1,57 +1,56 @@
 #!/bin/bash
 # Note: the code is very commented for convenience and newbies (not to annoy)
 
-main () {
-         # runs through all dirs that contain "timer" file
-        for t in "$repo"/*/timer; do
-		 # gets cronjob directory
+main() {
+	# runs through all dirs that contain "timer" file
+	for t in "$repo"/*/timer; do
+		# gets cronjob directory
 		d=${t%/*}
-                 # parentheses are needed to contain variables inside
-		(	 # compares the timer with the current epoch time
-                	timer=$(stat -c "%Y" "$d/timer")
-			 # gets current time by adding startup time and running time
-			(( time = startup + SECONDS ))
-                	if (( timer <= time )); then
-				 # deletes timer file to disable the cronjob if it is broken
+		# parentheses are needed to contain variables inside
+		( # compares the timer with the current epoch time
+			timer=$(stat -c "%Y" "$d/timer")
+			# gets current time by adding startup time and running time
+			((time = startup + SECONDS))
+			if ((timer <= time)); then
+				# deletes timer file to disable the cronjob if it is broken
 				rm "$d/timer"
-				 # gets the cronjob configuration variables
-                		source "$d/config"
-                        	 # runs the binary with specified user and then sets the timer if exit code is 0
-				  # Note: su part prevents code injection
-				su "$user" -s /bin/sh -c '"$1"' awecronrun "$d/bin" && touch -d "@$(( time + interval ))" "$d/timer"
-				 # logs events
-                                printf "awecron %s: %s [%s]\n" "$user" "$name" "$?"
-                	fi
+				# gets the cronjob configuration variables
+				source "$d/config"
+				# runs the binary with specified user and then sets the timer if exit code is 0
+				# Note: su part prevents code injection
+				su "$user" -s /bin/sh -c '"$1"' awecronrun "$d/bin" && touch -d "@$((time + interval))" "$d/timer"
+				# logs events
+				printf "awecron %s: %s [%s]\n" "$user" "$name" "$?"
+			fi
 		)
-	done	
+	done
 }
 
-dynamic_sleep () {
-         # gets the soonest cronjob "next run time" in the $repo
-          # Note: keep in mind that the "next run time" is stored in last modification time
-        for t in "$repo"/*/timer; do
-                # oldest last modification time == soonest cronjob "next run time"
-                if [[ ! "$oldest" || "$t" -ot "$oldest" ]]; then
-                        oldest="$t"
-                fi
-        done
-         # checks if there is any timer file
-        if [[ -n "$oldest" ]]; then
-                 # gets the "next run time"
-                next=$(stat -c "%Y" "$oldest")
-        else
-                 # sets to max sleep duration if no timer file found
-                delay="$max"
-                return 0
-        fi
-         # converts "next run time" to sleep duration and applies limits if required
-        ((
-                delay = next - (SECONDS + startup),
-                delay <= max || ( delay = max ),
-                delay >= min || ( delay = min )
-        ))
-}
+dynamic_sleep() {
+	# gets the soonest cronjob "next run time" in the $repo
+	# Note: keep in mind that the "next run time" is stored in last modification time
+	for t in "$repo"/*/timer; do
+		# oldest last modification time == soonest cronjob "next run time"
+		if [[ ! "$oldest" || "$t" -ot "$oldest" ]]; then
+			oldest="$t"
+		fi
+	done
+	# checks if there is any timer file
+	if [[ -n "$oldest" ]]; then
+		# gets the "next run time"
+		next=$(stat -c "%Y" "$oldest")
+	else
+		# sets to max sleep duration if no timer file found
+		delay="$max"
+		return 0
+	fi
+	# converts "next run time" to sleep duration and applies limits if required
+	((\
+	delay = next - (SECONDS + startup), \
+	delay <= max || (delay = max), \
+	delay >= min || (delay = min)))
 
+}
 
 # prevents errors when there is no timer files found
 shopt -s nullglob
@@ -70,6 +69,6 @@ min=5
 printf -v startup "%(%s)T"
 
 while true; do
-        main
-        dynamic_sleep && sleep $delay
+	main
+	dynamic_sleep && sleep $delay
 done
