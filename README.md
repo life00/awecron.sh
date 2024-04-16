@@ -1,47 +1,57 @@
 ### Disclaimer: Awecron requires root privileges and written by random guy on the internet. Understand the risks before using it.
 
-# Awesome Cron 
+# Awesome Cron
+
 ## Note: readme does not reflect the actual state of awecron (yet)
+
+## IMPORTANT: awecron.sh is no longer maintained and you are DISCOURAGED FROM USING IT because of found SECURITY ISSUES
+
+Recently I found an issue with how it spawns cronjobs for non-root users. Tldr: it can result in privilege escalation. I made a quick patch but I believe it is not sufficient. You are advised **NOT TO USE AWECRON** until I fully resolve the issue.
+
+I am currently slowly working on a rewrite of awecron in golang, and there this issue will be fixed. This repository will be archived.
+
 ## Introduction
+
 Awecron is a small and simple custom cron that has something similar between anacron and crontab.
 The aim of this project is to create extremely minimal cron that user is supposed to understand and debug on the source code level.
 Awecron was written without considering user experience and expecting users to fully understand how it works.
 
 ### The advantages of using it:
- * extremely minimal and easy to read
- * would still run if misses cronjob run time (_if comparing with crontab_)
- * no complicated time logic (_if comparing with anacron and using on desktop_)
+
+- extremely minimal and easy to read
+- would still run if misses cronjob run time (_if comparing with crontab_)
+- no complicated time logic (_if comparing with anacron and using on desktop_)
 
 ## Installation
 
 ### Dependencies
 
-* bash
-* su
-* stat
-* touch
+- bash
+- su
+- stat
+- touch
 
 #### Tested on:
 
-* GNU coreutils
-* BusyBox
+- GNU coreutils
+- BusyBox
 
-### How to use? 
+### How to use?
 
- * clone the repo
- * delete all hidden directories
- * configure the cronjob inside of an example template directory `ex` as you wish
- * make sure permissions are set securely to prevent privilege escalation
- * run `awecron` as root like a daemon
+- clone the repo
+- delete all hidden directories
+- configure the cronjob inside of an example template directory `ex` as you wish
+- make sure permissions are set securely to prevent privilege escalation
+- run `awecron` as root like a daemon
 
 ### Files
 
- * `run` is a binary or a shell script that supposed to run
- * `tmr` is an essential file that is automatically changed after last run to when the next time the `run` will run
-    * it uses last modification date of the file to set the timer
- * `cfg` contains configuration variables for the cronjob
-    * `user` what user runs the `run`
-    * `run` run interval in seconds
+- `run` is a binary or a shell script that supposed to run
+- `tmr` is an essential file that is automatically changed after last run to when the next time the `run` will run
+  - it uses last modification date of the file to set the timer
+- `cfg` contains configuration variables for the cronjob
+  - `user` what user runs the `run`
+  - `run` run interval in seconds
 
 ## How it works?
 
@@ -49,14 +59,14 @@ When awecron runs it checks and runs through every directory in the repo. It che
 
 ## Experimental Features
 
-The following are features that for some reason (*usually related to stability or performance*) are not enabled by default in awecron. They are planned to be eventually improved, fully implemented or removed. To enable a feature from this list you will have to manually uncomment code where comments mention the feature.
+The following are features that for some reason (_usually related to stability or performance_) are not enabled by default in awecron. They are planned to be eventually improved, fully implemented or removed. To enable a feature from this list you will have to manually uncomment code where comments mention the feature.
 
 - parallelism
-  - *description*
+  - _description_
 - "try again later" cronjob run
-  - *description*
+  - _description_
 - timeout
-  - *description*
+  - _description_
 
 ## To-Do
 
@@ -66,13 +76,13 @@ The following are features that for some reason (*usually related to stability o
     - note that inspired by interface of runit
     - fully move the documentation of how awecron config works to readme
     - improve the explanation of how awecron works and its components
-    - write the full feature set (*e.g. if cronjob errors then it will be disabled*)
+    - write the full feature set (_e.g. if cronjob errors then it will be disabled_)
     - clarify that user is expected to modify the file for configuration
     - improve and modify the github's awecron description
     - user may overwrite global variables or other automatically set variables per cronjob or through global awecron config
     - users are encouraged to change awecron to their needs (assuming they know what they are doing)
     - provide more detailed description of experimental features
-    - add latest version of bash as recommended 
+    - add latest version of bash as recommended
     - move all documentation to github wiki?
     - generally make the readme reflect all the changes to awecron
   - [ ] improve code comments
@@ -87,10 +97,10 @@ The following are features that for some reason (*usually related to stability o
   - ...
 - creation of supplementary scripts
   - [x] ~~create a separate `debugger` script that will allow the user to check for any errors or issues with awecron configuration, file permissions, etc.~~ Awecron checks for errors on statups
-  - [ ] create a miscellaneous cronjob that cleans the logs of awecron (*might be unnecessary with right service config?*)
+  - [ ] create a miscellaneous cronjob that cleans the logs of awecron (_might be unnecessary with right service config?_)
 - resolve experimental features
   - [ ] parallelism
-  - [ ] *try again later* cronjob error run
+  - [ ] _try again later_ cronjob error run
   - [ ] cronjob timeout
 - other
   - [ ] add service files (systemd, openrc, runit) for awecron
@@ -98,13 +108,12 @@ The following are features that for some reason (*usually related to stability o
   - [ ] improve packaging and distribution system
     - currently it is assumed that the user knows what everything does when installing the program, but this is not optimal
     - a better packaging+distribution system will require defining where awecron components will live and how it will be installed
-      - using a script (*also not optimal*)
-      - using a package manager (*unlikely because complicated*)
+      - using a script (_also not optimal_)
+      - using a package manager (_unlikely because complicated_)
     - this will likely be resolved as the user base of awecron will grows
   - [ ] rewrite awecron in Go
     - this would be a rather complicated task considering that a lot of shell script functionality is used
     - this might be implemented for experimental purposes
-
 
 ## Credits
 
@@ -112,5 +121,4 @@ Special thanks to these guys:
 
 - [hello-smile6](https://github.com/hello-smile6) for creating a mirror of the repo and other contribution
 - [inferenceus](https://github.com/inferenceus) for fixing my bad English
-- [kurahaupo](https://github.com/kurahaupo) for suggesting significant improvements to the code 
-
+- [kurahaupo](https://github.com/kurahaupo) for suggesting significant improvements to the code
