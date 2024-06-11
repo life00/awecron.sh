@@ -104,19 +104,13 @@ ercheck() {
         rm "$d/tmr"
         return 1
       fi
-      # checks if the user exists
-      if ! id -u "$user" &>/dev/null; then
-        log "cronjob user config variable is incorrectly set or does not exist"
-        rm "$d/tmr"
-        return 1
-      fi
     )
   done
 }
 
 # logging formatting
 log() {
-  printf "awecron (%s) {%s} [%s]: %s\n" "${user:-?}" "${name:-?}" "${ec:-?}" "$1"
+  printf "awecron (%s) {%s} [%s]: %s\n" "${USER:-?}" "${name:-?}" "${ec:-?}" "$1"
 }
 
 # prevents errors when there is no timer files found
