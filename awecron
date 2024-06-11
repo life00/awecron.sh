@@ -28,7 +28,7 @@ run() {
   # deletes timer file to disable the cronjob if it is broken
   rm "$d/tmr"
   # gets the cronjob configuration variables
-  source "$d/cfg"
+  run=$(cat "$d/cfg")
   # runs the binary with timeout
   timeout "$timeout" "$d/run"
   # save error code for later
