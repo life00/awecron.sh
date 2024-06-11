@@ -1,14 +1,10 @@
 #!/bin/bash
 
-# what user runs the bin
-user=user
-
 # run interval in seconds (supports math format)
-  # Note: 5 seconds is minimum by default
-  # Other than regular format in seconds (as currently uncommented) you can also include basic mathematical operation for your convinience (it might take a tiny bit of performance though)
-  # example:
-  # intrv="60 * 60 * 24 * N" # where N is the number of days
+# Note: 5 seconds is minimum by default
+# Other than regular format in seconds (as currently uncommented) you can also include basic mathematical operation for your convinience (it might take a tiny bit of performance though)
+# example:
+# intrv="60 * 60 * 24 * N" # where N is the number of days
 run=60 # one minute
 
 # talr=5 # uncomment for "try again later" feature
-
