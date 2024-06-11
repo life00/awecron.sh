@@ -72,7 +72,7 @@ ds() {
 # error check
 ercheck() {
   # checks that global awecron config variables are integers
-  if ! [[ "$max" =~ ^[0-9]+$ && "$min" =~ ^[0-9]+$ ]]; then
+  if ! [[ "$max" =~ ^[0-9]+$ && "$min" =~ ^[0-9]+$ && "$timeout" =~ ^[0-9]+$ ]]; then
     log "some awecron global config variable is incorrectly set or does not exist"
     exit 1
   fi
