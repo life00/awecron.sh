@@ -40,11 +40,6 @@ run() {
     touch -d "@$((time + run))" "$d/tmr"
   else
     log "cronjob run error"
-    # uncomment the following for "try again later" cronjob run feature
-    # if [[ "$ec" == "$talc" ]]
-    # then
-    #   touch -d "@$(( time + talr ))" "$d/tmr"
-    # fi
   fi
 }
 
