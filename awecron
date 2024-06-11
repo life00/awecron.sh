@@ -18,9 +18,9 @@ main() {
       if ((tmr <= time)); then
         run
       fi
-    ) # & # uncomment to enable parallelism
+    ) & # uncomment to enable parallelism
   done
-  # wait # uncomment to enable parallelism
+  wait # uncomment to enable parallelism
 }
 
 # function that actually runs a specific cronjob
@@ -29,9 +29,8 @@ run() {
   rm "$d/tmr"
   # gets the cronjob configuration variables
   source "$d/cfg"
-  # runs the binary
-  # timeout 10 \
-  "$d/run"
+  # runs the binary with timeout
+  timeout "$timeout" "$d/run"
   # save error code for later
   ec="$?"
   # exit code checking

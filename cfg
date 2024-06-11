@@ -1,11 +1,10 @@
 #!/bin/bash
 
 # maximum sleep duration limit
-  # Note: restart awecron after modifying cronjobs to not wait until awake
+# Note: restart awecron after modifying cronjobs to not wait until awake
 max=600
 
 # minimum sleep duration limit
 min=5
 
-# talc=69 # uncomment for "try again later" feature
-
+timeout=10
