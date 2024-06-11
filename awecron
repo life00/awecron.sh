@@ -85,7 +85,7 @@ ercheck() {
       name="${d##*/}"
       # checks if config exists and it is a file
       if [[ -f "$d/cfg" ]]; then
-        source "$d/cfg"
+        run=$(cat "$d/cfg")
       else
         log "cronjob configuration file is missing"
         rm "$d/tmr"
