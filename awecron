@@ -2,128 +2,128 @@
 # Note: the code is very commented for convenience and newbies (not to annoy)
 
 main() {
-	# runs through all dirs that contain "tmr" file
-	for t in $(ls -trd "$repo"/*/tmr); do
-		# parentheses are needed to contain the environment inside
-		( # error prevention
-			set -u
-			# gets cronjob directory
-			d="${t%/*}"
-			# gets the cronjob name
-			name="${d##*/}"
-			# compares the timer with the current epoch time
-			tmr=$(stat -c "%Y" "$d/tmr")
-			# gets current time by adding startup time and running time
-			((time = start + SECONDS))
-			if ((tmr <= time)); then
-				run
-			fi
-		) # & # uncomment to enable parallelism
-	done
-	# wait # uncomment to enable parallelism
+  # runs through all dirs that contain "tmr" file
+  for t in $(ls -trd "$repo"/*/tmr); do
+    # parentheses are needed to contain the environment inside
+    ( # error prevention
+      set -u
+      # gets cronjob directory
+      d="${t%/*}"
+      # gets the cronjob name
+      name="${d##*/}"
+      # compares the timer with the current epoch time
+      tmr=$(stat -c "%Y" "$d/tmr")
+      # gets current time by adding startup time and running time
+      ((time = start + SECONDS))
+      if ((tmr <= time)); then
+        run
+      fi
+    ) # & # uncomment to enable parallelism
+  done
+  # wait # uncomment to enable parallelism
 }
 
 # function that actually runs a specific cronjob
 run() {
-	# deletes timer file to disable the cronjob if it is broken
-	rm "$d/tmr"
-	# gets the cronjob configuration variables
-	source "$d/cfg"
-	# runs the binary with specified user and does
-	# Note: su part prevents code injection
-	# uncomment the following for cronjob timeout feature
-	# timeout 10 \
-	su "$user" -P -s /bin/sh -c '"$1"' run "$d/run"
-	# save error code for later
-	ec="$?"
-	# exit code checking
-	if [[ "$ec" = "0" ]]; then
-		log "cronjob run success"
-		touch -d "@$((time + run))" "$d/tmr"
-	else
-		log "cronjob run error"
-		# uncomment the following for "try again later" cronjob run feature
-		# if [[ "$ec" == "$talc" ]]
-		# then
-		#   touch -d "@$(( time + talr ))" "$d/tmr"
-		# fi
-	fi
+  # deletes timer file to disable the cronjob if it is broken
+  rm "$d/tmr"
+  # gets the cronjob configuration variables
+  source "$d/cfg"
+  # runs the binary with specified user and does
+  # Note: su part prevents code injection
+  # uncomment the following for cronjob timeout feature
+  # timeout 10 \
+  su "$user" -P -s /bin/sh -c '"$1"' run "$d/run"
+  # save error code for later
+  ec="$?"
+  # exit code checking
+  if [[ "$ec" = "0" ]]; then
+    log "cronjob run success"
+    touch -d "@$((time + run))" "$d/tmr"
+  else
+    log "cronjob run error"
+    # uncomment the following for "try again later" cronjob run feature
+    # if [[ "$ec" == "$talc" ]]
+    # then
+    #   touch -d "@$(( time + talr ))" "$d/tmr"
+    # fi
+  fi
 }
 
 # dynamic sleep
 ds() {
-	# gets the soonest cronjob "next run time" in the $repo
-	# Note: keep in mind that the "next run time" is stored in last modification time
-	for t in "$repo"/*/tmr; do
-		# oldest last modification time == soonest cronjob "next run time"
-		if [[ ! "$old" || "$t" -ot "$old" ]]; then
-			old="$t"
-		fi
-	done
-	# checks if there is any timer file
-	if [[ -n "$old" ]]; then
-		# gets the "next run time"
-		next=$(stat -c "%Y" "$old")
-	else
-		# sets to max sleep duration if no timer file found
-		delay="$max"
-		return 0
-	fi
-	# converts "next run time" to sleep duration and applies limits if required
-	((\
-	delay = next - (SECONDS + start), \
-	delay <= max || (delay = max), \
-	delay >= min || (delay = min)))
+  # gets the soonest cronjob "next run time" in the $repo
+  # Note: keep in mind that the "next run time" is stored in last modification time
+  for t in "$repo"/*/tmr; do
+    # oldest last modification time == soonest cronjob "next run time"
+    if [[ ! "$old" || "$t" -ot "$old" ]]; then
+      old="$t"
+    fi
+  done
+  # checks if there is any timer file
+  if [[ -n "$old" ]]; then
+    # gets the "next run time"
+    next=$(stat -c "%Y" "$old")
+  else
+    # sets to max sleep duration if no timer file found
+    delay="$max"
+    return 0
+  fi
+  # converts "next run time" to sleep duration and applies limits if required
+  ((\
+  delay = next - (SECONDS + start), \
+  delay <= max || (delay = max), \
+  delay >= min || (delay = min)))
 
 }
 
 # error check
 ercheck() {
-	# checks that global awecron config variables are integers
-	if ! [[ "$max" =~ ^[0-9]+$ && "$min" =~ ^[0-9]+$ ]]; then
-		log "some awecron global config variable is incorrectly set or does not exist"
-		exit 1
-	fi
+  # checks that global awecron config variables are integers
+  if ! [[ "$max" =~ ^[0-9]+$ && "$min" =~ ^[0-9]+$ ]]; then
+    log "some awecron global config variable is incorrectly set or does not exist"
+    exit 1
+  fi
 
-	for t in "$repo"/*/tmr; do
-		# parentheses are needed to contain the environment inside
-		( # gets cronjob directory
-			d="${t%/*}"
-			# gets the cronjob name
-			name="${d##*/}"
-			# checks if config exists and it is a file
-			if [[ -f "$d/cfg" ]]; then
-				source "$d/cfg"
-			else
-				log "cronjob configuration file is missing"
-				rm "$d/tmr"
-				return 1
-			fi
-			# checks that run is executable
-			if ! [[ -x "$d/run" ]]; then
-				log "cronjob run file is missing or not executable"
-				rm "$d/tmr"
-				return 1
-			fi
-			# checks if run variable is an integer
-			if ! [[ "$run" =~ ^[0-9]+$ ]]; then
-				log "some integer cronjob config variable is incorrectly set or does not exist"
-				rm "$d/tmr"
-				return 1
-			fi
-			# checks if the user exists
-			if ! id -u "$user" &>/dev/null; then
-				log "cronjob user config variable is incorrectly set or does not exist"
-				rm "$d/tmr"
-				return 1
-			fi
-		)
-	done
+  for t in "$repo"/*/tmr; do
+    # parentheses are needed to contain the environment inside
+    ( # gets cronjob directory
+      d="${t%/*}"
+      # gets the cronjob name
+      name="${d##*/}"
+      # checks if config exists and it is a file
+      if [[ -f "$d/cfg" ]]; then
+        source "$d/cfg"
+      else
+        log "cronjob configuration file is missing"
+        rm "$d/tmr"
+        return 1
+      fi
+      # checks that run is executable
+      if ! [[ -x "$d/run" ]]; then
+        log "cronjob run file is missing or not executable"
+        rm "$d/tmr"
+        return 1
+      fi
+      # checks if run variable is an integer
+      if ! [[ "$run" =~ ^[0-9]+$ ]]; then
+        log "some integer cronjob config variable is incorrectly set or does not exist"
+        rm "$d/tmr"
+        return 1
+      fi
+      # checks if the user exists
+      if ! id -u "$user" &>/dev/null; then
+        log "cronjob user config variable is incorrectly set or does not exist"
+        rm "$d/tmr"
+        return 1
+      fi
+    )
+  done
 }
 
 # logging formatting
 log() {
-	printf "awecron (%s) {%s} [%s]: %s\n" "${user:-?}" "${name:-?}" "${ec:-?}" "$1"
+  printf "awecron (%s) {%s} [%s]: %s\n" "${user:-?}" "${name:-?}" "${ec:-?}" "$1"
 }
 
 # prevents errors when there is no timer files found
@@ -136,16 +136,16 @@ repo="${BASH_SOURCE[0]%/*}"
 
 # checks if repo directory exists
 if ! [[ -d "$repo" ]]; then
-	log "awecron repo directory is incorrectly set or does not exist"
-	exit 1
+  log "awecron repo directory is incorrectly set or does not exist"
+  exit 1
 fi
 
 # checks if global awecron config file exists and runs it
 if [[ -f "$repo/cfg" ]]; then
-	source "$repo/cfg"
+  source "$repo/cfg"
 else
-	log "global awecron config file does not exist"
-	exit 1
+  log "global awecron config file does not exist"
+  exit 1
 fi
 
 # does an initial error check
@@ -156,6 +156,6 @@ ercheck
 printf -v start "%(%s)T"
 
 while true; do
-	main
-	ds && sleep "$delay"
+  main
+  ds && sleep "$delay"
 done
