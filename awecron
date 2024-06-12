@@ -29,8 +29,17 @@ run() {
   rm "$d/tmr"
   # gets the cronjob configuration variables
   run=$(cat "$d/cfg")
-  # runs the binary with timeout
-  timeout "$timeout" "$d/run"
+  # runs the binary in the background
+  "$d/run" &
+  rpid="$!"
+  # spawn watchdog process for timeout
+  (
+    sleep "$timeout"
+    kill "$rpid"
+  ) &
+  wpid=$!
+  # wait for run process and stop watchdog process when done
+  wait "$rpid" && kill "$wpid"
   # save error code for later
   ec="$?"
   # exit code checking
