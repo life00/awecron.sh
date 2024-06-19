@@ -35,13 +35,18 @@ run() {
   # spawn watchdog process for timeout
   (
     sleep "$timeout"
-    kill "$rpid"
+    # the cronjob is not trusted to properly exit
+    # so if timeout is reached the cronjob will be forced to exit
+    kill -9 "$rpid" >/dev/null 2>/dev/null
   ) &
   wpid=$!
-  # wait for run process and stop watchdog process when done
-  wait "$rpid" && kill "$wpid"
+  # wait for run process
+  wait "$rpid"
   # save error code for later
   ec="$?"
+  # stop watchdog process
+  # ignore errors because wpid might not exist; there may not be a better way to handle this
+  kill "$wpid" >/dev/null 2>/dev/null
   # exit code checking
   if [[ "$ec" = "0" ]]; then
     log "cronjob run success"
