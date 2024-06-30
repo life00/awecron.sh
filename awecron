@@ -101,8 +101,9 @@ ercheck() {
 
   for t in "$repo"/*/tmr; do
     [ -e "$t" ] || continue # verify that file exists
-    # parentheses are needed to contain the environment inside
-    ( # gets cronjob directory
+    # creates subshell to isolate the environment and for parallelism
+    (
+      # gets cronjob directory
       d="${t%/*}"
       # gets the cronjob name
       name="${d##*/}"
@@ -126,9 +127,9 @@ ercheck() {
         rm "$d/tmr"
         return 1
       fi
-      # TODO: parallelism, because why not?
-    )
+    ) &
   done
+  wait
 }
 
 # logging format
