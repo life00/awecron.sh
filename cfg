@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 # maximum sleep duration limit
 # NOTE: restart awecron after modifying cronjobs to not wait until awake
