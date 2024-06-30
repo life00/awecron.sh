@@ -1,2 +1,2 @@
 #!/bin/sh
-exec chpst -u root /usr/sbin/awecron 2>&1
+exec chpst -u root /usr/local/bin/awecron 2>&1
