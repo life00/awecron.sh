@@ -1,9 +1,9 @@
 #!/bin/sh
 
 main() {
-  # runs through all dirs that contain `tmr`  file
+  # runs through all dirs that contain `tmr` file
   # the order does not matter because it all will be in parallel
-  for t in "$repo"/*/tmr; do
+  for t in "$cdir"/*/tmr; do
     [ -e "$t" ] || continue # verify that file exists
     # creates subshell to isolate the environment and for parallelism
     (
@@ -30,7 +30,7 @@ run() {
   # deletes timer file to disable the cronjob if it is broken
   rm "$d/tmr"
   # gets the cronjob configuration variable
-  run=$(cat "$d/cfg")
+  cfg=$(cat "$d/cfg")
   # runs the binary in the background
   "$d/run" &
   rpid="$!"
@@ -53,7 +53,7 @@ run() {
   if [ "$ec" = "0" ]; then
     log "cronjob run success"
     # schedule the timer for next run time
-    touch -d "@$((time + run))" "$d/tmr"
+    touch -d "@$((time + cfg))" "$d/tmr"
   else
     log "cronjob run error"
   fi
@@ -61,9 +61,9 @@ run() {
 
 # dynamic sleep
 ds() {
-  # gets the soonest cronjob next run time in the $repo
+  # gets the soonest cronjob next run time in the $cdir
   # NOTE: keep in mind that the "next run time" is stored in last modification time
-  for t in "$repo"/*/tmr; do
+  for t in "$cdir"/*/tmr; do
     [ -e "$t" ] || continue # verify that file exists
     # oldest last modification time == soonest cronjob next run time
     if [ ! "$old" ] || [ "$t" -ot "$old" ]; then
@@ -99,7 +99,7 @@ ercheck() {
     exit 1
   fi
 
-  for t in "$repo"/*/tmr; do
+  for t in "$cdir"/*/tmr; do
     [ -e "$t" ] || continue # verify that file exists
     # creates subshell to isolate the environment and for parallelism
     (
@@ -109,7 +109,7 @@ ercheck() {
       name="${d##*/}"
       # checks if config exists and it is a file
       if [ -f "$d/cfg" ]; then
-        run=$(cat "$d/cfg")
+        cfg=$(cat "$d/cfg")
       else
         log "cronjob configuration file is missing"
         rm "$d/tmr"
@@ -121,8 +121,8 @@ ercheck() {
         rm "$d/tmr"
         return 1
       fi
-      # checks if run variable is an integer
-      if ! expr "$run" : '[0-9]\+' >/dev/null; then
+      # checks if cfg variable is an integer
+      if ! expr "$cfg" : '[0-9]\+' >/dev/null; then
         log "cronjob config variable is incorrectly set or does not exist"
         rm "$d/tmr"
         return 1
@@ -139,19 +139,21 @@ log() {
 
 # checks if various options for storing awecron config directory exist, then sets to that location
 if [ -d "$XDG_CONFIG_DIR/awecron" ]; then
-  repo="$XDG_CONFIG_DIR/awecron"
+  cdir="$XDG_CONFIG_DIR/awecron"
 elif [ -d "$HOME/.config/awecron" ]; then
-  repo="$HOME/.config/awecron"
+  cdir="$HOME/.config/awecron"
 elif [ -d "/etc/awecron" ]; then
-  repo="/etc/awecron"
+  cdir="/etc/awecron"
 else
   log "awecron config directory does not exist"
   exit 1
 fi
 
+cdir="/home/user/dev/src/awecron"
+
 # checks if global awecron config file exists and runs it
-if [ -f "$repo/cfg" ]; then
-  . "$repo/cfg"
+if [ -f "$cdir/cfg" ]; then
+  . "$cdir/cfg"
 else
   log "global awecron config file does not exist"
   exit 1
