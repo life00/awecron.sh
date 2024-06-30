@@ -2,7 +2,7 @@
 Description=Awecron cron daemon
 
 [Service]
-ExecStart=/bin/sh /usr/local/bin/awecron
+ExecStart=/usr/local/bin/awecron
 User=root
 
 [Install]
