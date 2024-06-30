@@ -149,8 +149,6 @@ else
   exit 1
 fi
 
-cdir="/home/user/dev/src/awecron"
-
 # checks if global awecron config file exists and runs it
 if [ -f "$cdir/cfg" ]; then
   . "$cdir/cfg"
