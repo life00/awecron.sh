@@ -1,12 +1,11 @@
 #!/bin/sh
-# Note: the code is very commented for convenience and newbies (not to annoy)
 
 main() {
-  # runs through all dirs that contain "tmr" file
+  # runs through all dirs that contain `tmr`  file
   # the order does not matter because it all will be in parallel
   for t in "$repo"/*/tmr; do
     [ -e "$t" ] || continue # verify that file exists
-    # parentheses are needed to contain the environment inside
+    # creates subshell to isolate the environment and for parallelism
     (
       # error when using unset variables
       # can't also use -e because awecron should handle errors by itself
@@ -21,16 +20,16 @@ main() {
       if [ $((tmr <= time)) = 1 ]; then
         run
       fi
-    ) & # uncomment to enable parallelism
+    ) &
   done
-  wait # uncomment to enable parallelism
+  wait
 }
 
-# function that actually runs a specific cronjob
+# function that actually runs a given cronjob
 run() {
   # deletes timer file to disable the cronjob if it is broken
   rm "$d/tmr"
-  # gets the cronjob configuration variables
+  # gets the cronjob configuration variable
   run=$(cat "$d/cfg")
   # runs the binary in the background
   "$d/run" &
@@ -53,6 +52,7 @@ run() {
   # exit code checking
   if [ "$ec" = "0" ]; then
     log "cronjob run success"
+    # schedule the timer for next run time
     touch -d "@$((time + run))" "$d/tmr"
   else
     log "cronjob run error"
@@ -61,31 +61,31 @@ run() {
 
 # dynamic sleep
 ds() {
-  # gets the soonest cronjob "next run time" in the $repo
-  # Note: keep in mind that the "next run time" is stored in last modification time
+  # gets the soonest cronjob next run time in the $repo
+  # NOTE: keep in mind that the "next run time" is stored in last modification time
   for t in "$repo"/*/tmr; do
     [ -e "$t" ] || continue # verify that file exists
-    # oldest last modification time == soonest cronjob "next run time"
+    # oldest last modification time == soonest cronjob next run time
     if [ ! "$old" ] || [ "$t" -ot "$old" ]; then
       old="$t"
     fi
   done
   # checks if there is any timer file
   if [ -n "$old" ]; then
-    # gets the "next run time"
+    # gets the next run time
     next=$(stat -c "%Y" "$old")
   else
     # sets to max sleep duration if no timer file found
     delay="$max"
     return 0
   fi
-  # converts "next run time" to sleep duration and applies limits if required
+  # converts next run time to sleep duration and applies limits if necessary
   time=$(awk 'BEGIN{srand(); print srand()}')
   delay=$((next - time))
-  if [ $((delay <= max)) = 0 ]; then
+  if [ $((delay > max)) = 1 ]; then
     delay="$max"
   fi
-  if [ $((delay >= min)) = 0 ]; then
+  if [ $((delay < min)) = 1 ]; then
     delay="$min"
   fi
 }
@@ -126,11 +126,12 @@ ercheck() {
         rm "$d/tmr"
         return 1
       fi
+      # TODO: parallelism, because why not?
     )
   done
 }
 
-# logging formatting
+# logging format
 log() {
   printf "awecron (%s) {%s} [%s]: %s\n" "${USER:-?}" "${name:-?}" "${ec:-?}" "$1"
 }
@@ -156,7 +157,7 @@ else
 fi
 
 # does an initial error check
-# Note: this is an optional feature that can be easily disabled by deleting the function and this function call
+# NOTE: this is optional and if you really want you may remove it
 ercheck
 
 while true; do

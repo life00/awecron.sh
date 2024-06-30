@@ -1,4 +1,4 @@
 #!/bin/bash
 
-# just change this to touching file for example for testing
+# this is an example executable file
 echo "hello world!"
