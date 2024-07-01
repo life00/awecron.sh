@@ -1,0 +1,12 @@
+#!/bin/sh
+
+# maximum sleep duration limit
+# NOTE: restart awecron after modifying cronjobs to not wait until awake
+max=600
+
+# minimum sleep duration limit
+min=5
+
+# maximum timeout for a cronjob to run
+# after reaching the limit a cronjob will be force stopped and disabled
+timeout=10

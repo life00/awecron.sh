@@ -1,74 +1,167 @@
-#!/bin/bash
-# Note: the code is very commented for convenience and newbies (not to annoy)
+#!/bin/sh
 
 main() {
-	# runs through all dirs that contain "timer" file
-	for t in "$repo"/*/timer; do
-		# gets cronjob directory
-		d=${t%/*}
-		# parentheses are needed to contain variables inside
-		( # compares the timer with the current epoch time
-			timer=$(stat -c "%Y" "$d/timer")
-			# gets current time by adding startup time and running time
-			((time = startup + SECONDS))
-			if ((timer <= time)); then
-				# deletes timer file to disable the cronjob if it is broken
-				rm "$d/timer"
-				# gets the cronjob configuration variables
-				source "$d/config"
-				# runs the binary with specified user and then sets the timer if exit code is 0
-				# Note: su part prevents code injection
-				su "$user" -P -s /bin/sh -c '"$1"' awecronrun "$d/bin" && touch -d "@$((time + interval))" "$d/timer"
-				# logs events
-				printf "awecron %s: %s [%s]\n" "$user" "$name" "$?"
-			fi
-		)
-	done
+  # runs through all dirs that contain `tmr` file
+  # the order does not matter because it all will be in parallel
+  for t in "$cdir"/*/tmr; do
+    [ -e "$t" ] || continue # verify that file exists
+    # creates subshell to isolate the environment and for parallelism
+    (
+      # error when using unset variables
+      # can't also use -e because awecron should handle errors by itself
+      set -u
+      # gets cronjob directory
+      d="${t%/*}"
+      # gets the cronjob name
+      name="${d##*/}"
+      # compares the timer with the current epoch time
+      tmr=$(stat -c "%Y" "$d/tmr")
+      time=$(awk 'BEGIN{srand(); print srand()}')
+      if [ $((tmr <= time)) = 1 ]; then
+        run
+      fi
+    ) &
+  done
+  wait
 }
 
-dynamic_sleep() {
-	# gets the soonest cronjob "next run time" in the $repo
-	# Note: keep in mind that the "next run time" is stored in last modification time
-	for t in "$repo"/*/timer; do
-		# oldest last modification time == soonest cronjob "next run time"
-		if [[ ! "$oldest" || "$t" -ot "$oldest" ]]; then
-			oldest="$t"
-		fi
-	done
-	# checks if there is any timer file
-	if [[ -n "$oldest" ]]; then
-		# gets the "next run time"
-		next=$(stat -c "%Y" "$oldest")
-	else
-		# sets to max sleep duration if no timer file found
-		delay="$max"
-		return 0
-	fi
-	# converts "next run time" to sleep duration and applies limits if required
-	((\
-	delay = next - (SECONDS + startup), \
-	delay <= max || (delay = max), \
-	delay >= min || (delay = min)))
-
+# function that actually runs a given cronjob
+run() {
+  # deletes timer file to disable the cronjob if it is broken
+  rm "$d/tmr"
+  # gets the cronjob configuration variable
+  cfg=$(cat "$d/cfg")
+  # runs the binary in the background
+  "$d/run" &
+  rpid="$!"
+  # spawn watchdog process for timeout
+  (
+    sleep "$timeout"
+    # the cronjob is not trusted to properly exit
+    # so if timeout is reached the cronjob will be forced to exit
+    kill -9 "$rpid" >/dev/null 2>/dev/null
+  ) &
+  wpid=$!
+  # wait for run process
+  wait "$rpid"
+  # save error code for later
+  ec="$?"
+  # stop watchdog process
+  # ignore errors because wpid might not exist; there may not be a better way to handle this
+  kill "$wpid" >/dev/null 2>/dev/null
+  # exit code checking
+  if [ "$ec" = "0" ]; then
+    log "cronjob run success"
+    # schedule the timer for next run time
+    touch -d "@$((time + cfg))" "$d/tmr"
+  else
+    log "cronjob run error"
+  fi
 }
 
-# prevents errors when there is no timer files found
-shopt -s nullglob
+# dynamic sleep
+ds() {
+  # gets the soonest cronjob next run time in the $cdir
+  # NOTE: keep in mind that the "next run time" is stored in last modification time
+  for t in "$cdir"/*/tmr; do
+    [ -e "$t" ] || continue # verify that file exists
+    # oldest last modification time == soonest cronjob next run time
+    if [ ! "$old" ] || [ "$t" -ot "$old" ]; then
+      old="$t"
+    fi
+  done
+  # checks if there is any timer file
+  if [ -n "$old" ]; then
+    # gets the next run time
+    next=$(stat -c "%Y" "$old")
+  else
+    # sets to max sleep duration if no timer file found
+    delay="$max"
+    return 0
+  fi
+  # converts next run time to sleep duration and applies limits if necessary
+  time=$(awk 'BEGIN{srand(); print srand()}')
+  delay=$((next - time))
+  if [ $((delay > max)) = 1 ]; then
+    delay="$max"
+  fi
+  if [ $((delay < min)) = 1 ]; then
+    delay="$min"
+  fi
+}
 
-# sets the awecron repo directory
-repo=${BASH_SOURCE[0]%/*}
+# error check
+ercheck() {
+  # checks that global awecron config variables are integers
+  # using expr with regex because of POSIX compatibility reasons
+  if ! { expr "$max" : '[0-9]\+' && expr "$min" : '[0-9]\+' && expr "$timeout" : '[0-9]\+'; } >/dev/null; then
+    log "some awecron global config variable is incorrectly set or does not exist"
+    exit 1
+  fi
 
-# maximum sleep duration limit
-# Note: restart awecron after modifying cronjobs to not wait until awake
-max=600
+  for t in "$cdir"/*/tmr; do
+    [ -e "$t" ] || continue # verify that file exists
+    # creates subshell to isolate the environment and for parallelism
+    (
+      # gets cronjob directory
+      d="${t%/*}"
+      # gets the cronjob name
+      name="${d##*/}"
+      # checks if config exists and it is a file
+      if [ -f "$d/cfg" ]; then
+        cfg=$(cat "$d/cfg")
+      else
+        log "cronjob configuration file is missing"
+        rm "$d/tmr"
+        return 1
+      fi
+      # checks that run is executable
+      if ! [ -x "$d/run" ]; then
+        log "cronjob run file is missing or not executable"
+        rm "$d/tmr"
+        return 1
+      fi
+      # checks if cfg variable is an integer
+      if ! expr "$cfg" : '[0-9]\+' >/dev/null; then
+        log "cronjob config variable is incorrectly set or does not exist"
+        rm "$d/tmr"
+        return 1
+      fi
+    ) &
+  done
+  wait
+}
 
-# minimum sleep duration limit
-min=5
+# logging format
+log() {
+  printf "awecron (%s) {%s} [%s]: %s\n" "${USER:-?}" "${name:-?}" "${ec:-?}" "$1"
+}
 
-# gets the startup time of awecron
-printf -v startup "%(%s)T"
+# checks if various options for storing awecron config directory exist, then sets to that location
+if [ -d "$XDG_CONFIG_DIR/awecron" ]; then
+  cdir="$XDG_CONFIG_DIR/awecron"
+elif [ -d "$HOME/.config/awecron" ]; then
+  cdir="$HOME/.config/awecron"
+elif [ -d "/etc/awecron" ]; then
+  cdir="/etc/awecron"
+else
+  log "awecron config directory does not exist"
+  exit 1
+fi
+
+# checks if global awecron config file exists and runs it
+if [ -f "$cdir/cfg" ]; then
+  . "$cdir/cfg"
+else
+  log "global awecron config file does not exist"
+  exit 1
+fi
+
+# does an initial error check
+# NOTE: this is optional and if you really want you may remove it
+ercheck
 
 while true; do
-	main
-	dynamic_sleep && sleep $delay
+  main
+  ds && sleep "$delay"
 done

@@ -1,0 +1,2 @@
+#!/bin/sh
+exec chpst -u root /usr/local/bin/awecron 2>&1

@@ -1,0 +1,12 @@
+#!/sbin/openrc-run
+
+depend() {
+  use logger
+  provide cron
+}
+
+name="awecron"
+description="Awecron cron daemon"
+command="/usr/local/bin/awecron"
+command_background=true
+pidfile="/run/${RC_SVCNAME}.pid"

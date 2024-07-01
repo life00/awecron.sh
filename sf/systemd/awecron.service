@@ -1,0 +1,9 @@
+[Unit]
+Description=Awecron cron daemon
+
+[Service]
+ExecStart=/usr/local/bin/awecron
+User=root
+
+[Install]
+WantedBy=multi-user.target

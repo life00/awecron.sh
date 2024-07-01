@@ -1,4 +1,0 @@
-#!/bin/bash
-
-# just change this to touching file for example for testing
-echo "hello world!"
