@@ -12,8 +12,6 @@ main() {
       set -u
       # gets cronjob directory
       d="${t%/*}"
-      # gets the cronjob name
-      name="${d##*/}"
       # compares the timer with the current epoch time
       tmr=$(stat -c "%Y" "$d/tmr")
       time=$(awk 'BEGIN{srand(); print srand()}')
@@ -29,8 +27,6 @@ main() {
 run() {
   # deletes timer file to disable the cronjob if it is broken
   rm "$d/tmr"
-  # gets the cronjob configuration variable
-  cfg=$(cat "$d/cfg")
   # runs the binary in the background
   "$d/run" &
   rpid="$!"
@@ -49,9 +45,13 @@ run() {
   # stop watchdog process
   # ignore errors because wpid might not exist; there may not be a better way to handle this
   kill "$wpid" >/dev/null 2>/dev/null
+  # gets the cronjob name
+  name="${d##*/}"
   # exit code checking
   if [ "$ec" = "0" ]; then
     log "cronjob run success"
+    # gets the cronjob configuration variable
+    cfg=$(cat "$d/cfg")
     # schedule the timer for next run time
     touch -d "@$((time + cfg))" "$d/tmr"
   else
