@@ -1,8 +1,10 @@
-# Awesome Cron
+# Awesome Cron .sh
 
 ## Introduction
 
 Awecron is a small and simple custom cron written in POSIX shell script. The aim of this project is to create a minimal cron in POSIX shell script with a special scheduling design for desktop / laptop users. Awecron was written expecting users to fully understand how it works and be able to debug it on the source code level if necessary.
+
+Note however that you are encouraged to instead use the awecron implementation written in Golang as it is arguably more suitable for the application, has better error checks and appears to have better performance. You may find it in [this repository](https://github.com/life00/awecron). It is _fully_^[Except the global awecron config [./cfg](./cfg) in awecron.go is a TOML file, not a shell script like in awecron.sh. This however is not a problem because as long as you keep it simple like in the example provided (i.e. don't run actual shell scripts) it is cross compatible. This is the reason why TOML was chosen for awecron.go.] compatible with the existing awecron.sh configuration.
 
 ### Features
 
@@ -88,7 +90,8 @@ Afterwards, awecron runs dynamic sleep function which calculates the necessary a
 
 ## To-Do
 
-- [ ] rewrite awecron in Golang
+- [x] rewrite awecron in Golang
+  - see the [repository](https://github.com/life00/awecron)
 
 ## Credits
 
